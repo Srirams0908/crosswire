@@ -40,13 +40,20 @@ export default function Landing() {
               I'm a Participant
             </button>
           </div>
-          <div className="flex justify-center">
+          <div className="flex justify-center gap-4">
             <button
               onClick={() => navigate('/observer')}
               className="flex items-center gap-2 text-navy-500 hover:text-navy-300 text-sm transition-colors py-1.5 px-3 rounded-lg hover:bg-navy-800/50"
             >
               <span>👁</span>
               <span>Join as Observer</span>
+            </button>
+            <button
+              onClick={() => navigate('/history')}
+              className="flex items-center gap-2 text-navy-500 hover:text-navy-300 text-sm transition-colors py-1.5 px-3 rounded-lg hover:bg-navy-800/50"
+            >
+              <span>🕐</span>
+              <span>Session History</span>
             </button>
           </div>
         </div>

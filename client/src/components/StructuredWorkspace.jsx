@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { EVENTS_DATA, parseContent, emptyContent, emptyRows } from '../data/events';
+import { getEventDef, parseContent, emptyContent, emptyRows } from '../data/events';
 
 const COUNTRY_FLAGS = {
   Brazil: '🇧🇷', India: '🇮🇳', Germany: '🇩🇪',
@@ -9,7 +9,7 @@ const COUNTRY_FLAGS = {
 export default function StructuredWorkspace({
   eventName, round, content, prevContent, prevTeam, prevHandoff, onChange, readOnly
 }) {
-  const eventDef = EVENTS_DATA[eventName];
+  const eventDef = getEventDef(eventName);
   const [local, setLocal] = useState(() => parseContent(content));
   const lastSent = useRef(content);
 
@@ -19,8 +19,6 @@ export default function StructuredWorkspace({
       setLocal(parseContent(content));
     }
   }, [content]);
-
-  if (!eventDef) return null;
 
   const emit = (next) => {
     const serialized = JSON.stringify(next);

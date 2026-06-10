@@ -59,6 +59,8 @@ export default function FacilitatorSetup() {
   const [error, setError] = useState('');
   const [fullscreen, setFullscreen] = useState(false);
   const [serverReady, setServerReady] = useState(false);
+  const [customizeEvents, setCustomizeEvents] = useState(false);
+  const [customEvents, setCustomEvents] = useState(['', '', '']);
 
   // Wake the server as soon as the facilitator opens setup
   useEffect(() => {
@@ -97,7 +99,13 @@ export default function FacilitatorSetup() {
   const handleLaunch = async () => {
     setLoading(true);
     setError('');
-    const body = JSON.stringify({ participantCount, countries: instanceCountries, roundDuration });
+    const useCustomEvents = customizeEvents && customEvents.every(e => e.trim());
+    const body = JSON.stringify({
+      participantCount,
+      countries: instanceCountries,
+      roundDuration,
+      ...(useCustomEvents ? { customEvents } : {}),
+    });
     try {
       const res = await fetch(`${BACKEND_URL}/api/sessions`, {
         method: 'POST',
@@ -107,6 +115,12 @@ export default function FacilitatorSetup() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setSessionData(data);
+      // Append to local history
+      const history = JSON.parse(localStorage.getItem('crosswire_history') || '[]');
+      if (!history.includes(data.facilitatorCode)) {
+        history.unshift(data.facilitatorCode);
+        localStorage.setItem('crosswire_history', JSON.stringify(history.slice(0, 20)));
+      }
       setStep(3);
     } catch (e) {
       setError('Could not reach the server. Please try again in a moment.');
@@ -195,6 +209,39 @@ export default function FacilitatorSetup() {
                   ))}
                 </div>
                 <RoundTimeline duration={roundDuration} />
+              </div>
+
+              {/* Custom event names */}
+              <div className="mb-6">
+                <button
+                  type="button"
+                  onClick={() => setCustomizeEvents(v => !v)}
+                  className="flex items-center gap-2 text-sm text-navy-400 hover:text-white transition-colors"
+                >
+                  <span className={`w-4 h-4 rounded border flex items-center justify-center text-xs transition-colors ${customizeEvents ? 'bg-amber-500 border-amber-500 text-navy-950' : 'border-navy-600'}`}>
+                    {customizeEvents ? '✓' : ''}
+                  </span>
+                  Customize event names
+                </button>
+                {customizeEvents && (
+                  <div className="mt-3 space-y-2 animate-fade-in">
+                    <p className="text-xs text-navy-500">Replace the 3 default events (Press Conference, Product Launch, Internal Conference) with your own.</p>
+                    {['Event 1', 'Event 2', 'Event 3'].map((placeholder, i) => (
+                      <input
+                        key={i}
+                        type="text"
+                        value={customEvents[i]}
+                        onChange={e => setCustomEvents(prev => { const next = [...prev]; next[i] = e.target.value; return next; })}
+                        placeholder={placeholder}
+                        className="input-field w-full text-sm"
+                        maxLength={40}
+                      />
+                    ))}
+                    {customizeEvents && !customEvents.every(e => e.trim()) && (
+                      <p className="text-xs text-amber-400">All 3 event names must be filled to use custom events.</p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {config && (

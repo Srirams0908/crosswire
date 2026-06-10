@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 
 const MAX_WORDS = 150;
+const MIN_WORDS = 20;
 
 function countWords(text) {
   return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
@@ -9,6 +10,7 @@ function countWords(text) {
 export default function HandoffNote({ visible, content, onChange, onSubmit, submitted, isLastRound = false, unlockSeconds = 90 }) {
   const wordCount = countWords(content || '');
   const overLimit = wordCount > MAX_WORDS;
+  const underMinimum = wordCount > 0 && wordCount < MIN_WORDS;
 
   if (isLastRound) return null;
 
@@ -41,7 +43,7 @@ export default function HandoffNote({ visible, content, onChange, onSubmit, subm
     <div className="card border-amber-500/40 bg-amber-500/5 animate-fade-in">
       <div className="flex items-center justify-between mb-2">
         <p className="text-xs text-amber-400 uppercase tracking-wider font-medium">Handoff Note</p>
-        <span className={`text-xs font-mono ${overLimit ? 'text-red-400' : 'text-navy-500'}`}>
+        <span className={`text-xs font-mono ${overLimit ? 'text-red-400' : underMinimum ? 'text-amber-400' : 'text-navy-500'}`}>
           {wordCount}/{MAX_WORDS} words
         </span>
       </div>
@@ -56,11 +58,14 @@ export default function HandoffNote({ visible, content, onChange, onSubmit, subm
         onChange={e => onChange?.(e.target.value)}
         placeholder="Write your handoff note here..."
         rows={4}
-        className={`input-field resize-none text-sm mb-3 ${
-          overLimit ? 'border-red-500 focus:border-red-500' : ''
+        className={`input-field resize-none text-sm mb-2 ${
+          overLimit ? 'border-red-500 focus:border-red-500' : underMinimum ? 'border-amber-500/60 focus:border-amber-500' : ''
         }`}
         disabled={submitted}
       />
+      {underMinimum && (
+        <p className="text-xs text-amber-400 mb-2">Aim for at least {MIN_WORDS} words — the next team needs enough context.</p>
+      )}
       <button
         onClick={onSubmit}
         disabled={submitted || overLimit || wordCount === 0}

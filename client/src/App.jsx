@@ -8,6 +8,7 @@ import Debrief from './pages/Debrief';
 import ObserverJoin from './pages/ObserverJoin';
 import ObserverView from './pages/ObserverView';
 import EndCard from './pages/EndCard';
+import SessionHistory from './pages/SessionHistory';
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/observer" element={<ObserverJoin />} />
         <Route path="/observer/view" element={<ObserverView />} />
         <Route path="/end" element={<EndCard />} />
+        <Route path="/history" element={<SessionHistory />} />
       </Routes>
     </BrowserRouter>
   );

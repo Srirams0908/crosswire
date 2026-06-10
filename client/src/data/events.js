@@ -1,5 +1,18 @@
 export const EVENT_NAMES = ['Press Conference', 'Product Launch', 'Internal Conference'];
 
+const GENERIC_EVENT_DEF = {
+  framing: 'Your team is working on this event. Read what the previous team left you, then continue building the plan below.',
+  tasks: [
+    { id: 'task1', label: 'TASK 1 — AGENDA', description: 'Plan the structure of the event.', type: 'table', columns: ['Step', 'Activity / Description', 'Notes'], colWidths: ['w-12', 'flex-1', 'w-36'] },
+    { id: 'task2', label: 'TASK 2 — MATERIALS', description: 'List what your team will need to prepare or present.', type: 'table', columns: ['Item', 'Purpose', 'Responsible Person'], colWidths: ['w-32', 'flex-1', 'w-36'] },
+    { id: 'task3', label: 'TASK 3 — NOTES', description: 'Define the ground rules and any additional notes.', type: 'text' },
+  ],
+};
+
+export function getEventDef(name) {
+  return EVENTS_DATA[name] || { ...GENERIC_EVENT_DEF, framing: `Your team is working on: ${name}. Read what the previous team left you, then continue building the plan below.` };
+}
+
 export const EVENTS_DATA = {
   'Press Conference': {
     framing: 'Your team is organizing an international Press Conference. This is a high-stakes public event — journalists, media, and external stakeholders will be present. You have been handed work from another team. Read what they left you, then continue developing the plan below.',

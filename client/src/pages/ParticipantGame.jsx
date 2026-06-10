@@ -7,6 +7,7 @@ import RoleCard from '../components/RoleCard';
 import StructuredWorkspace from '../components/StructuredWorkspace';
 import HandoffNote from '../components/HandoffNote';
 import TransitionScreen from '../components/TransitionScreen';
+import { playBeep, playDoubleBeep, playHandoffBeep } from '../utils/audio';
 
 const COUNTRY_FLAGS = {
   Brazil: '🇧🇷', India: '🇮🇳', Germany: '🇩🇪',
@@ -36,6 +37,9 @@ export default function ParticipantGame() {
   const [incomingHandoff, setIncomingHandoff] = useState('');
   const wsUpdateRef = useRef(null);
   const currentAssignment = useRef(null);
+  const firedBeeps = useRef(new Set());
+  const sessionRef = useRef(null);
+  const [curveball, setCurveball] = useState(null);
 
   const joinCode = localStorage.getItem('joinCode');
   const name = localStorage.getItem('participantName');
@@ -61,6 +65,7 @@ export default function ParticipantGame() {
       setParticipant(p);
       setTeam(t);
       setSession(s);
+      sessionRef.current = s;
       setRemaining(r);
       localStorage.setItem('participantId', p.id);
       localStorage.setItem('teamId', t.id);
@@ -68,6 +73,7 @@ export default function ParticipantGame() {
 
     socket.on('session:state', (s) => {
       setSession(s);
+      sessionRef.current = s;
     });
 
     socket.on('timer:update', ({ remaining: r, handoffSecs: hs }) => {
@@ -118,9 +124,9 @@ export default function ParticipantGame() {
             if (!assign) return;
             const teams = assign.instance.teams;
             const myIdx = teams.findIndex(t => t.id === localStorage.getItem('teamId'));
-            const nextEventIdx = (myIdx + toRound - 1) % 3;
-            const events = ['Press Conference', 'Product Launch', 'Internal Conference'];
-            const nextEvent = events[nextEventIdx];
+            const evts = sessionRef.current?.config?.customEvents || ['Press Conference', 'Product Launch', 'Internal Conference'];
+            const nextEventIdx = (myIdx + toRound - 1) % evts.length;
+            const nextEvent = evts[nextEventIdx];
             const hn = handoffs.find(h =>
               h.instance_id === assign.instance.id &&
               h.event_name === nextEvent &&
@@ -139,6 +145,10 @@ export default function ParticipantGame() {
     socket.on('facilitator:broadcast', ({ message }) => {
       setBroadcast(message);
       setTimeout(() => setBroadcast(null), 10000);
+    });
+
+    socket.on('game:curveball', ({ text }) => {
+      setCurveball(text);
     });
 
     socket.on('error', ({ message }) => {
@@ -160,6 +170,7 @@ export default function ParticipantGame() {
       socket.off('game:handoff');
       socket.off('game:debrief');
       socket.off('facilitator:broadcast');
+      socket.off('game:curveball');
       socket.off('error');
       socket.disconnect();
     };
@@ -178,7 +189,7 @@ export default function ParticipantGame() {
     const myIdx = teams.findIndex(t => t.id === team.id);
     if (myIdx === -1) return null;
 
-    const events = ['Press Conference', 'Product Launch', 'Internal Conference'];
+    const events = session.config?.customEvents || ['Press Conference', 'Product Launch', 'Internal Conference'];
     const eventIdx = (myIdx + (round - 1)) % events.length;
 
     return { event: events[eventIdx], round, instance: myInstance };
@@ -243,6 +254,36 @@ export default function ParticipantGame() {
       setHandoffVisible(true);
     }
   }, [remaining, session?.status]);
+
+  // Audio alerts at key time thresholds
+  useEffect(() => {
+    if (session?.status !== 'active' || !remaining) return;
+    const THRESHOLDS = [
+      { at: 300, fn: playDoubleBeep },
+      { at: 120, fn: () => playBeep(520, 0.18, 0.3) },
+      { at: 60,  fn: () => playBeep(660, 0.2, 0.35) },
+    ];
+    THRESHOLDS.forEach(({ at, fn }) => {
+      if (remaining === at && !firedBeeps.current.has(at)) {
+        firedBeeps.current.add(at);
+        fn();
+      }
+    });
+  }, [remaining, session?.status]);
+
+  // Play handoff-unlock sound
+  useEffect(() => {
+    if (handoffVisible && !firedBeeps.current.has('handoff')) {
+      firedBeeps.current.add('handoff');
+      playHandoffBeep();
+    }
+  }, [handoffVisible]);
+
+  // Reset beep tracking and curveball when round changes
+  useEffect(() => {
+    firedBeeps.current.clear();
+    setCurveball(null);
+  }, [session?.current_round]);
 
   const handleWorkspaceChange = useCallback((content) => {
     setWorkspaceContent(content);
@@ -338,6 +379,13 @@ export default function ParticipantGame() {
           handoffNote={incomingHandoff}
           onDone={() => setTransition(null)}
         />
+      )}
+
+      {/* Curveball banner */}
+      {curveball && (
+        <div className="bg-red-600 text-white text-center py-3 px-4 text-sm font-semibold animate-fade-in">
+          ⚡ CURVEBALL: {curveball}
+        </div>
       )}
 
       {/* Broadcast banner */}

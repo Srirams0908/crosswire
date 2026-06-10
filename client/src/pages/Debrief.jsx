@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateSessionPDF } from '../utils/exportPDF';
 import AnalyticsPanel from '../components/AnalyticsPanel';
-import { parseContent, EVENTS_DATA } from '../data/events';
+import { parseContent, EVENTS_DATA, getEventDef } from '../data/events';
 import socket from '../socket';
 import { BACKEND_URL } from '../config';
 
@@ -278,15 +278,64 @@ export default function Debrief() {
   );
 }
 
+// ── Diff helpers ─────────────────────────────────────────────────────────────
+
+function diffTableRows(prev, curr) {
+  // Returns curr rows tagged 'same'|'added', plus removed rows from prev
+  const prevTexts = prev.map(r => [r.c0, r.c1, r.c2].join('\t'));
+  const currTexts = curr.map(r => [r.c0, r.c1, r.c2].join('\t'));
+  const prevSet = new Set(prevTexts);
+  const currSet = new Set(currTexts);
+
+  const result = curr.map((row, i) => ({
+    row,
+    status: prevSet.has(currTexts[i]) ? 'same' : 'added',
+  }));
+
+  const removed = prev
+    .filter((_, i) => !currSet.has(prevTexts[i]))
+    .map(row => ({ row, status: 'removed' }));
+
+  return [...result, ...removed];
+}
+
+function diffText(prev, curr) {
+  const prevWords = (prev || '').trim().split(/\s+/).filter(Boolean);
+  const currWords = (curr || '').trim().split(/\s+/).filter(Boolean);
+  const prevSet = new Set(prevWords);
+  const currSet = new Set(currWords);
+
+  const tokens = [];
+  currWords.forEach(w => tokens.push({ word: w, status: prevSet.has(w) ? 'same' : 'added' }));
+  prevWords.filter(w => !currSet.has(w)).forEach(w => tokens.push({ word: w, status: 'removed' }));
+  return tokens;
+}
+
 function EventEvolution({ eventName, rounds }) {
-  const eventDef = EVENTS_DATA[eventName];
+  const [showDiff, setShowDiff] = useState(false);
+  const eventDef = getEventDef(eventName);
   return (
     <div className="card">
-      <h3 className="font-display text-xl font-bold text-amber-500 mb-6">{eventName}</h3>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="font-display text-xl font-bold text-amber-500">{eventName}</h3>
+        <button
+          onClick={() => setShowDiff(v => !v)}
+          className={`text-xs px-3 py-1.5 rounded-lg border font-medium transition-colors ${
+            showDiff
+              ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+              : 'border-navy-600 text-navy-400 hover:text-white hover:border-navy-500'
+          }`}
+        >
+          {showDiff ? '● Show changes ON' : '○ Show changes'}
+        </button>
+      </div>
       <div className="space-y-4">
         {rounds.map(({ round, team, content, handoffNote, handoffSubmitted }) => {
           const parsed = parseContent(content);
           const hasContent = content && content.trim();
+          const prevRound = rounds.find(r => r.round === round - 1);
+          const prevParsed = prevRound ? parseContent(prevRound.content) : null;
+
           return (
             <div key={round} className="relative">
               {round < 3 && (
@@ -312,7 +361,12 @@ function EventEvolution({ eventName, rounds }) {
                   ) : eventDef ? (
                     <div className="space-y-2">
                       {eventDef.tasks.map(task => (
-                        <DebriefTaskBlock key={task.id} task={task} content={parsed} />
+                        <DebriefTaskBlock
+                          key={task.id}
+                          task={task}
+                          content={parsed}
+                          prevContent={showDiff && prevParsed ? prevParsed : null}
+                        />
                       ))}
                     </div>
                   ) : (
@@ -340,10 +394,14 @@ function EventEvolution({ eventName, rounds }) {
   );
 }
 
-function DebriefTaskBlock({ task, content }) {
+function DebriefTaskBlock({ task, content, prevContent }) {
   if (task.type === 'table') {
-    const rows = (content[task.id] || []).filter(r => r.c0 || r.c1 || r.c2);
-    if (!rows.length) return null;
+    const rawRows = (content[task.id] || []).filter(r => r.c0 || r.c1 || r.c2);
+    if (!rawRows.length) return null;
+
+    const prevRows = prevContent ? (prevContent[task.id] || []).filter(r => r.c0 || r.c1 || r.c2) : null;
+    const diffed = prevRows ? diffTableRows(prevRows, rawRows) : rawRows.map(row => ({ row, status: 'same' }));
+
     return (
       <div className="bg-navy-800 rounded-xl border border-navy-700 overflow-hidden">
         <div className="px-3 py-1.5 bg-navy-800 border-b border-navy-700">
@@ -359,10 +417,25 @@ function DebriefTaskBlock({ task, content }) {
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, i) => (
-                <tr key={i} className="border-b border-navy-700/50 last:border-b-0">
+              {diffed.map(({ row, status }, i) => (
+                <tr
+                  key={i}
+                  className={`border-b border-navy-700/50 last:border-b-0 ${
+                    status === 'added' ? 'bg-emerald-500/10' :
+                    status === 'removed' ? 'bg-red-500/10' : ''
+                  }`}
+                >
                   {['c0','c1','c2'].map(col => (
-                    <td key={col} className="px-3 py-2 text-navy-200 whitespace-pre-wrap">{row[col] || '—'}</td>
+                    <td
+                      key={col}
+                      className={`px-3 py-2 whitespace-pre-wrap ${
+                        status === 'added' ? 'text-emerald-300' :
+                        status === 'removed' ? 'text-red-400 line-through opacity-60' :
+                        'text-navy-200'
+                      }`}
+                    >
+                      {row[col] || '—'}
+                    </td>
                   ))}
                 </tr>
               ))}
@@ -373,10 +446,31 @@ function DebriefTaskBlock({ task, content }) {
     );
   }
   if (!content.task3?.trim()) return null;
+
+  const prevText = prevContent?.task3;
+  const tokens = prevContent && prevText !== undefined ? diffText(prevText, content.task3) : null;
+
   return (
     <div className="bg-navy-800 rounded-xl border border-navy-700 p-3">
       <p className="text-xs font-bold text-amber-500/80 uppercase tracking-wider mb-1">{task.label}</p>
-      <p className="text-sm text-navy-200 whitespace-pre-wrap leading-relaxed">{content.task3}</p>
+      {tokens ? (
+        <p className="text-sm leading-relaxed">
+          {tokens.map((t, i) => (
+            <span
+              key={i}
+              className={
+                t.status === 'added' ? 'text-emerald-300' :
+                t.status === 'removed' ? 'text-red-400 line-through opacity-60' :
+                'text-navy-200'
+              }
+            >
+              {t.word}{' '}
+            </span>
+          ))}
+        </p>
+      ) : (
+        <p className="text-sm text-navy-200 whitespace-pre-wrap leading-relaxed">{content.task3}</p>
+      )}
     </div>
   );
 }

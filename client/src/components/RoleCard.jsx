@@ -45,6 +45,14 @@ export default function RoleCard({ participant, team, round, showReflection, onR
           </div>
         )}
 
+        {/* Hidden cultural norms — visible only to this team */}
+        {countryData?.norms && (
+          <div className="mt-3 bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
+            <p className="text-xs text-purple-400 uppercase tracking-wider font-medium mb-1">Secret Protocol</p>
+            <p className="text-purple-200 text-xs leading-relaxed">{countryData.norms}</p>
+          </div>
+        )}
+
         <p className="text-xs text-navy-600 italic mt-4 border-t border-navy-800 pt-3">
           Stay in character throughout the round.
         </p>

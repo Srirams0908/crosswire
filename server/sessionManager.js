@@ -5,6 +5,7 @@ const COUNTRIES = {
   Brazil: {
     flag: '🇧🇷',
     style: 'Relationship-first. High-context. Values warmth, flexibility, and harmony. Communication is expressive and personal.',
+    norms: 'TEAM PROTOCOL (keep this within your team): All decisions must be confirmed aloud by at least two people before anyone writes them down. If only one person agrees, keep discussing.',
     roles: {
       Manager: 'You make decisions quickly and expect others to keep up. You move fast, speak with energy, and don\'t like waiting for consensus. If the group goes quiet, you fill the silence.',
       'Person 1': 'You often talk over others when excited about ideas. You don\'t mean to be rude — you just can\'t contain your enthusiasm. You interrupt, then apologize, then interrupt again.',
@@ -17,6 +18,7 @@ const COUNTRIES = {
   India: {
     flag: '🇮🇳',
     style: 'Hierarchical yet collaborative. High-context. Indirect communication. Respect for seniority. Consensus-oriented.',
+    norms: 'TEAM PROTOCOL (keep this within your team): The Manager\'s word is final — but the Manager must ask every member for input before deciding. No one may be skipped.',
     roles: {
       Manager: 'You encourage open debate and expect people to speak up. Silence in your team makes you uncomfortable — you interpret it as disengagement. You check in with everyone before finalizing anything.',
       'Person 1': 'You like to multitask and switch between ideas rapidly. You jump topics quickly, connect things others don\'t see as connected, and sometimes leave conversations before they\'re finished.',
@@ -29,6 +31,7 @@ const COUNTRIES = {
   Germany: {
     flag: '🇩🇪',
     style: 'Direct, structured, rule-oriented. Low-context. Values accuracy, thoroughness, and clear processes. Punctuality is respect.',
+    norms: 'TEAM PROTOCOL (keep this within your team): No one may move to the next task until the current one is fully documented and everyone has read it. Skipping ahead is not allowed.',
     roles: {
       Manager: 'You speak slowly and deliberately. Precision matters more than speed. You expect structured discussion — one person at a time, clear points, no rambling. You visibly lose patience with vague answers.',
       'Person 1': 'You are skeptical and question everything before agreeing. "But have we actually verified that?" is your default response. You don\'t obstruct — you just need evidence before you commit.',
@@ -41,6 +44,7 @@ const COUNTRIES = {
   Japan: {
     flag: '🇯🇵',
     style: 'Harmony-preserving. Very high-context. Indirect. Group consensus (nemawashi). Silence is meaningful. Hierarchy respected.',
+    norms: 'TEAM PROTOCOL (keep this within your team): Every member must give explicit verbal agreement before the handoff note can be submitted. If anyone stays silent, it counts as disagreement.',
     roles: {
       Manager: 'You value group harmony above all. You never directly disagree with anyone — instead you use phrases like "that\'s interesting" or "we might consider..." to signal concern without confrontation.',
       'Person 1': 'You communicate indirectly. You never say "no" outright. Instead you say "that could be difficult" or "we may need more time to consider." Others often miss that you\'re actually declining.',
@@ -53,6 +57,7 @@ const COUNTRIES = {
   France: {
     flag: '🇫🇷',
     style: 'Intellectual, debate-oriented. High-context. Disagreement is normal and healthy. Eloquence valued. Hierarchy respected but challenged.',
+    norms: 'TEAM PROTOCOL (keep this within your team): Your team must challenge at least one item from the inherited plan before adding anything new. Accepting everything uncritically is considered lazy.',
     roles: {
       Manager: 'You love intellectual debate and see challenge as respect. If nobody argues with your idea, you assume nobody was engaged enough to think critically. Agreement without debate feels hollow to you.',
       'Person 1': 'You think out loud — your ideas are half-formed when you start speaking, and they evolve as you talk. Others sometimes think you\'ve made a decision when you\'re still exploring.',
@@ -65,6 +70,7 @@ const COUNTRIES = {
   Nigeria: {
     flag: '🇳🇬',
     style: 'Adaptive, entrepreneurial, relationship-driven. High energy. Flexible with time. Strong oral tradition. Resilient under pressure.',
+    norms: 'TEAM PROTOCOL (keep this within your team): Spend the first 2 minutes of every round connecting — no one starts writing until everyone has spoken at least once, even if just to say hello.',
     roles: {
       Manager: 'You build relationships before building plans. The first few minutes of any working session you spend connecting with people — asking how they are, making jokes, establishing warmth. Then you work.',
       'Person 1': 'You are expressive and energetic — your emotions show clearly in how you speak. Excitement sounds like excitement; frustration sounds like frustration. You don\'t separate your feelings from your work.',
@@ -136,7 +142,7 @@ function calculateConfig(participantCount) {
   return { instances, teamsPerInstance, totalTeams, teamSizes, participantCount };
 }
 
-function createSession({ participantCount, countries, roundDuration = 300 }) {
+function createSession({ participantCount, countries, roundDuration = 300, customEvents }) {
   const config = calculateConfig(participantCount);
   const facilitatorCode = generateFacilitatorCode();
   const sessionId = uuidv4();
@@ -158,7 +164,11 @@ function createSession({ participantCount, countries, roundDuration = 300 }) {
 
   db.exec('BEGIN');
   try {
-    insertSession.run(sessionId, facilitatorCode, JSON.stringify({ ...config, countries }), roundDuration);
+    const sessionConfig = { ...config, countries };
+    if (customEvents && customEvents.length === 3 && customEvents.every(e => e && e.trim())) {
+      sessionConfig.customEvents = customEvents.map(e => e.trim());
+    }
+    insertSession.run(sessionId, facilitatorCode, JSON.stringify(sessionConfig), roundDuration);
 
     const allTeams = [];
 
@@ -336,13 +346,16 @@ function getInstanceEvents(instanceId) {
 
 function getEventAssignment(instanceId, round) {
   const instance = db.prepare('SELECT * FROM instances WHERE id = ?').get(instanceId);
+  const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(instance.session_id);
+  const config = JSON.parse(session.config);
+  const events = config.customEvents || EVENTS;
   const teams = db.prepare('SELECT * FROM teams WHERE instance_id = ? ORDER BY team_number').all(instanceId);
 
   return teams.map((team, teamIdx) => {
-    const eventIdx = (teamIdx + (round - 1)) % EVENTS.length;
+    const eventIdx = (teamIdx + (round - 1)) % events.length;
     return {
       team,
-      event: EVENTS[eventIdx],
+      event: events[eventIdx],
       eventIndex: eventIdx
     };
   });
@@ -354,12 +367,14 @@ function updateFacilitatorNotes(sessionId, notes) {
 
 function getDebriefData(sessionId) {
   const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId);
+  const config = JSON.parse(session.config);
+  const events = config.customEvents || EVENTS;
   const instances = db.prepare('SELECT * FROM instances WHERE session_id = ?').all(sessionId);
 
   return instances.map(inst => {
     const teams = db.prepare('SELECT * FROM teams WHERE instance_id = ? ORDER BY team_number').all(inst.id);
 
-    const eventData = EVENTS.map((eventName, eventIdx) => {
+    const eventData = events.map((eventName, eventIdx) => {
       const rounds = [1, 2, 3].map(r => {
         const assignment = getEventAssignment(inst.id, r);
         const teamForRound = assignment.find(a => a.eventIndex === eventIdx);

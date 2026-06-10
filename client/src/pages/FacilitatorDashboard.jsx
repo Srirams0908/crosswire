@@ -18,6 +18,8 @@ export default function FacilitatorDashboard() {
   const [remaining, setRemaining] = useState(0);
   const [broadcastMsg, setBroadcastMsg] = useState('');
   const [showBroadcast, setShowBroadcast] = useState(false);
+  const [showCurveball, setShowCurveball] = useState(false);
+  const [curveballMsg, setCurveballMsg] = useState('');
   const [error, setError] = useState('');
   const [fullscreen, setFullscreen] = useState(false);
   const [handoffStatuses, setHandoffStatuses] = useState({});
@@ -136,12 +138,29 @@ export default function FacilitatorDashboard() {
     setShowBroadcast(false);
   };
 
+  const CURVEBALL_PRESETS = [
+    'Budget just cut by 20% — revise your materials list immediately.',
+    'Key speaker cancelled 2 hours before. Find a replacement now.',
+    'Venue changed — you\'re now hosting outdoors. Adapt your plans.',
+    'An executive just added themselves to the guest list unexpectedly.',
+    'Social media is already reporting the event. Control the narrative.',
+  ];
+
+  const handleCurveball = (text) => {
+    const msg = text || curveballMsg;
+    if (!msg.trim()) return;
+    socket.emit('facilitator:curveball', { sessionId, text: msg });
+    setCurveballMsg('');
+    setShowCurveball(false);
+  };
+
   const getAssignments = (instance, round) => {
     if (!round || round === 0) return [];
+    const events = session?.config?.customEvents || EVENTS;
     const teams = instance.teams || [];
     return teams.map((team, teamIdx) => {
-      const eventIdx = (teamIdx + (round - 1)) % EVENTS.length;
-      return { team, event: EVENTS[eventIdx] };
+      const eventIdx = (teamIdx + (round - 1)) % events.length;
+      return { team, event: events[eventIdx] };
     });
   };
 
@@ -196,6 +215,11 @@ export default function FacilitatorDashboard() {
           <button onClick={() => setShowBroadcast(!showBroadcast)} className="btn-ghost text-sm px-3 py-2">
             📢 Broadcast
           </button>
+          {(status === 'active' || status === 'paused') && (
+            <button onClick={() => setShowCurveball(!showCurveball)} className="btn-ghost text-sm px-3 py-2 border-red-500/40 text-red-400 hover:bg-red-500/10">
+              ⚡ Curveball
+            </button>
+          )}
         </div>
       </header>
 
@@ -214,6 +238,37 @@ export default function FacilitatorDashboard() {
             Send
           </button>
           <button onClick={() => setShowBroadcast(false)} className="text-navy-400 hover:text-white px-2">✕</button>
+        </div>
+      )}
+
+      {/* Curveball panel */}
+      {showCurveball && (
+        <div className="bg-red-950/60 border-b border-red-900/50 px-6 py-4 animate-fade-in">
+          <p className="text-xs text-red-400 uppercase tracking-wider font-medium mb-3">⚡ Fire a Curveball — visible to all participants immediately</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-3">
+            {CURVEBALL_PRESETS.map((preset, i) => (
+              <button
+                key={i}
+                onClick={() => handleCurveball(preset)}
+                className="text-left text-xs text-red-200 bg-red-900/40 border border-red-800/50 rounded-lg px-3 py-2 hover:bg-red-800/50 transition-colors"
+              >
+                {preset}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-3">
+            <input
+              value={curveballMsg}
+              onChange={e => setCurveballMsg(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleCurveball()}
+              placeholder="Or write a custom curveball..."
+              className="input-field flex-1 text-sm py-2 border-red-800/50"
+            />
+            <button onClick={() => handleCurveball()} disabled={!curveballMsg.trim()} className="text-sm px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-medium disabled:opacity-40 transition-colors">
+              Fire
+            </button>
+            <button onClick={() => setShowCurveball(false)} className="text-navy-400 hover:text-white px-2">✕</button>
+          </div>
         </div>
       )}
 

@@ -32,11 +32,11 @@ app.get('/api/countries', (req, res) => {
 
 app.post('/api/sessions', (req, res) => {
   try {
-    const { participantCount, countries, roundDuration } = req.body;
+    const { participantCount, countries, roundDuration, customEvents } = req.body;
     if (!participantCount || !countries) {
       return res.status(400).json({ error: 'participantCount and countries required' });
     }
-    const result = createSession({ participantCount, countries, roundDuration });
+    const result = createSession({ participantCount, countries, roundDuration, customEvents });
     res.json(result);
   } catch (err) {
     console.error(err);
@@ -207,7 +207,43 @@ app.get('/api/sessions/:sessionId/analytics', (req, res) => {
     .slice(0, 20)
     .map(([word, count]) => ({ word, count }));
 
-  res.json({ handoffByTeam, reflectionRates, topWords });
+  // ── "What got lost": keywords in R1 absent in R3 per event ──────────────────
+  const eventNames = db.prepare(
+    'SELECT DISTINCT event_name FROM workspaces WHERE session_id = ?'
+  ).all(sessionId).map(r => r.event_name);
+
+  const lostByEvent = eventNames.map(eventName => {
+    const r1Rows = db.prepare(
+      "SELECT content FROM workspaces WHERE session_id = ? AND event_name = ? AND round = 1 AND content != ''"
+    ).all(sessionId, eventName);
+    const r3Rows = db.prepare(
+      "SELECT content FROM workspaces WHERE session_id = ? AND event_name = ? AND round = 3 AND content != ''"
+    ).all(sessionId, eventName);
+
+    const toFreqMap = (rows) => {
+      const freq = {};
+      rows.map(r => extractWorkspaceText(r.content)).join(' ')
+        .toLowerCase()
+        .replace(/[^a-z\s]/g, ' ')
+        .split(/\s+/)
+        .filter(w => w.length > 2 && !STOP.has(w))
+        .forEach(w => { freq[w] = (freq[w] || 0) + 1; });
+      return freq;
+    };
+
+    const r1Freq = toFreqMap(r1Rows);
+    const r3Keys = new Set(Object.keys(toFreqMap(r3Rows)));
+
+    const lostKeywords = Object.entries(r1Freq)
+      .filter(([w]) => !r3Keys.has(w))
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([word, r1Count]) => ({ word, r1Count }));
+
+    return { eventName, lostKeywords };
+  }).filter(e => e.lostKeywords.length > 0);
+
+  res.json({ handoffByTeam, reflectionRates, topWords, lostByEvent });
 });
 
 app.get('/api/sessions/:sessionId/instances/:instanceId/assignments', (req, res) => {
@@ -216,6 +252,19 @@ app.get('/api/sessions/:sessionId/instances/:instanceId/assignments', (req, res)
   if (!session) return res.status(404).json({ error: 'Session not found' });
   const assignments = getEventAssignment(instanceId, session.current_round);
   res.json(assignments);
+});
+
+app.post('/api/sessions/by-codes', (req, res) => {
+  const { codes } = req.body;
+  if (!Array.isArray(codes) || codes.length === 0) return res.json([]);
+  const placeholders = codes.map(() => '?').join(',');
+  const rows = db.prepare(
+    `SELECT id, facilitator_code, config, status, current_round, created_at FROM sessions WHERE facilitator_code IN (${placeholders})`
+  ).all(...codes.map(c => c.toUpperCase()));
+  res.json(rows.map(s => ({
+    ...s,
+    config: JSON.parse(s.config),
+  })));
 });
 
 app.patch('/api/sessions/:sessionId/notes', (req, res) => {
@@ -405,6 +454,10 @@ io.on('connection', (socket) => {
 
   socket.on('facilitator:broadcast', ({ sessionId, message }) => {
     io.to(`session:${sessionId}`).emit('facilitator:broadcast', { message });
+  });
+
+  socket.on('facilitator:curveball', ({ sessionId, text }) => {
+    io.to(`session:${sessionId}`).emit('game:curveball', { text, timestamp: Date.now() });
   });
 
   socket.on('session:close', ({ sessionId }) => {

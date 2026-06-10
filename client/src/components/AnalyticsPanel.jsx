@@ -11,7 +11,7 @@ const REFLECTION_LABELS = [
 
 export default function AnalyticsPanel({ data }) {
   if (!data) return null;
-  const { handoffByTeam, reflectionRates, topWords } = data;
+  const { handoffByTeam, reflectionRates, topWords, lostByEvent } = data;
 
   const maxWordCount = Math.max(1, ...handoffByTeam.map(t => t.avgWordCount));
   const maxFreq = topWords[0]?.count || 1;
@@ -75,6 +75,33 @@ export default function AnalyticsPanel({ data }) {
           ))}
         </div>
       </div>
+
+      {/* ── What got lost ── */}
+      {lostByEvent && lostByEvent.length > 0 && (
+        <div className="card">
+          <h3 className="font-display text-base font-bold text-white mb-1">What Got Lost</h3>
+          <p className="text-xs text-navy-400 mb-4">Keywords written in Round 1 that disappeared by Round 3</p>
+          <div className="space-y-4">
+            {lostByEvent.map(({ eventName, lostKeywords }) => (
+              <div key={eventName}>
+                <p className="text-xs text-amber-500 font-semibold uppercase tracking-wider mb-2">{eventName}</p>
+                <div className="flex flex-wrap gap-2">
+                  {lostKeywords.map(({ word, r1Count }) => (
+                    <span
+                      key={word}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-500/15 border border-red-500/30 rounded-full text-xs text-red-300"
+                      title={`Appeared ${r1Count}× in Round 1`}
+                    >
+                      {word}
+                      <span className="text-red-500/60 font-mono text-[10px]">×{r1Count}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Word frequency ── */}
       <div className="card">
