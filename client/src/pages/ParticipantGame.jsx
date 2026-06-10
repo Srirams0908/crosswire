@@ -231,10 +231,9 @@ export default function ParticipantGame() {
         const prevHn = handoffs.find(h => h.instance_id === instance.id && h.event_name === event && h.from_round === round - 1);
         setPrevHandoff(prevHn?.content || '');
 
-        const teams = instance.teams;
-        const myIdx = teams.findIndex(t => t.id === team?.id);
-        const prevTeamIdx = ((myIdx - 1) + teams.length) % teams.length;
-        setPrevTeam(teams[prevTeamIdx]?.country || '');
+        // Identify the previous team from the workspace's team_id
+        const prevTeamObj = prevWs ? instance.teams.find(t => t.id === prevWs.team_id) : null;
+        setPrevTeam(prevTeamObj?.country || '');
       }
     }).catch(() => {});
   }, [assignment?.event, assignment?.round]);
