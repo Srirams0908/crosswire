@@ -58,6 +58,21 @@ export default function FacilitatorSetup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [fullscreen, setFullscreen] = useState(false);
+  const [serverReady, setServerReady] = useState(false);
+
+  // Wake the server as soon as the facilitator opens setup
+  useEffect(() => {
+    const wake = async () => {
+      for (let attempt = 0; attempt < 10; attempt++) {
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/countries`);
+          if (res.ok) { setServerReady(true); return; }
+        } catch {}
+        await new Promise(r => setTimeout(r, 8000));
+      }
+    };
+    wake();
+  }, []);
 
   useEffect(() => {
     if (participantCount >= 12 && participantCount <= 50) {
@@ -83,29 +98,21 @@ export default function FacilitatorSetup() {
     setLoading(true);
     setError('');
     const body = JSON.stringify({ participantCount, countries: instanceCountries, roundDuration });
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/sessions`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        setSessionData(data);
-        setStep(3);
-        setLoading(false);
-        return;
-      } catch (e) {
-        if (attempt < 3) {
-          setError(`Server is waking up… retrying (${attempt}/3)`);
-          await new Promise(r => setTimeout(r, 5000));
-        } else {
-          setError('Could not reach the server. Please try again in a moment.');
-        }
-      }
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/sessions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setSessionData(data);
+      setStep(3);
+    } catch (e) {
+      setError('Could not reach the server. Please try again in a moment.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const openDashboard = () => {
@@ -265,8 +272,8 @@ export default function FacilitatorSetup() {
 
             <div className="flex gap-3">
               <button onClick={() => setStep(1)} className="btn-ghost flex-1">← Back</button>
-              <button onClick={handleLaunch} disabled={loading} className="btn-primary flex-[2]">
-                {loading ? 'Creating session...' : 'Generate Session Codes →'}
+              <button onClick={handleLaunch} disabled={loading || !serverReady} className="btn-primary flex-[2]">
+                {loading ? 'Creating session...' : !serverReady ? 'Connecting to server…' : 'Generate Session Codes →'}
               </button>
             </div>
             {error && <p className="text-red-400 text-sm mt-3 text-center">{error}</p>}
