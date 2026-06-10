@@ -30,6 +30,10 @@ export default function ParticipantGame() {
   const [showReflection, setShowReflection] = useState(false);
   const [error, setError] = useState('');
   const [connected, setConnected] = useState(false);
+  const [prevContent, setPrevContent] = useState('');
+  const [prevHandoff, setPrevHandoff] = useState('');
+  const [prevTeam, setPrevTeam] = useState('');
+  const [incomingHandoff, setIncomingHandoff] = useState('');
   const wsUpdateRef = useRef(null);
   const currentAssignment = useRef(null);
 
@@ -59,6 +63,7 @@ export default function ParticipantGame() {
       setSession(s);
       setRemaining(r);
       localStorage.setItem('participantId', p.id);
+      localStorage.setItem('teamId', t.id);
     });
 
     socket.on('session:state', (s) => {
@@ -103,6 +108,28 @@ export default function ParticipantGame() {
     socket.on('game:handoff', ({ fromRound, toRound }) => {
       setShowReflection(true);
       setTransition({ fromRound, toRound });
+      // Fetch the handoff note the current team is about to receive
+      const sid = localStorage.getItem('sessionId');
+      if (sid) {
+        fetch(`${BACKEND_URL}/api/sessions/${sid}/handoffs`)
+          .then(r => r.json())
+          .then(handoffs => {
+            const assign = currentAssignment.current;
+            if (!assign) return;
+            const teams = assign.instance.teams;
+            const myIdx = teams.findIndex(t => t.id === localStorage.getItem('teamId'));
+            const nextEventIdx = (myIdx + toRound - 1) % 3;
+            const events = ['Press Conference', 'Product Launch', 'Internal Conference'];
+            const nextEvent = events[nextEventIdx];
+            const hn = handoffs.find(h =>
+              h.instance_id === assign.instance.id &&
+              h.event_name === nextEvent &&
+              h.from_round === fromRound
+            );
+            setIncomingHandoff(hn?.content || '');
+          })
+          .catch(() => {});
+      }
     });
 
     socket.on('game:debrief', () => {
@@ -165,28 +192,51 @@ export default function ParticipantGame() {
     }
   }, [assignment]);
 
-  // Fetch workspace content when assignment changes
+  // Fetch workspace and handoff data when assignment changes
   useEffect(() => {
     if (!assignment || !session) return;
     const { event, round, instance } = assignment;
 
-    fetch(`${BACKEND_URL}/api/sessions/${session.id}/instances/${instance.id}/assignments`)
-      .then(r => r.json())
-      .catch(() => null);
-
-    // Load workspace from server state
-    const ws = findWorkspace(session, instance.id, event, round);
-    setWorkspaceContent(ws?.content || '');
-
-    // Load handoff note
-    if (round > 0 && round < 3) {
-      const hn = findHandoffNote(session, instance.id, event, round);
-      setHandoffContent(hn?.content || '');
-      setHandoffSubmitted(hn?.submitted || false);
-    }
-
-    // Handoff visible if within unlock window or already unlocked
+    setWorkspaceContent('');
+    setPrevContent('');
+    setPrevHandoff('');
+    setPrevTeam('');
+    setHandoffContent('');
+    setHandoffSubmitted(false);
     setHandoffVisible(remaining <= handoffSecs && session.status === 'active');
+
+    Promise.all([
+      fetch(`${BACKEND_URL}/api/sessions/${session.id}/workspaces?round=${round}`).then(r => r.json()),
+      fetch(`${BACKEND_URL}/api/sessions/${session.id}/handoffs`).then(r => r.json()),
+      round > 1
+        ? fetch(`${BACKEND_URL}/api/sessions/${session.id}/workspaces?round=${round - 1}`).then(r => r.json())
+        : Promise.resolve([]),
+    ]).then(([currWorkspaces, handoffs, prevWorkspaces]) => {
+      // Current round workspace
+      const currWs = currWorkspaces.find(w => w.instance_id === instance.id && w.event_name === event);
+      setWorkspaceContent(currWs?.content || '');
+
+      // Current round handoff note (for writing)
+      if (round < 3) {
+        const hn = handoffs.find(h => h.instance_id === instance.id && h.event_name === event && h.from_round === round);
+        setHandoffContent(hn?.content || '');
+        setHandoffSubmitted(hn?.submitted === 1 || hn?.submitted === true);
+      }
+
+      // Previous round data (read-only display above workspace)
+      if (round > 1) {
+        const prevWs = prevWorkspaces.find(w => w.instance_id === instance.id && w.event_name === event);
+        setPrevContent(prevWs?.content || '');
+
+        const prevHn = handoffs.find(h => h.instance_id === instance.id && h.event_name === event && h.from_round === round - 1);
+        setPrevHandoff(prevHn?.content || '');
+
+        const teams = instance.teams;
+        const myIdx = teams.findIndex(t => t.id === team?.id);
+        const prevTeamIdx = ((myIdx - 1) + teams.length) % teams.length;
+        setPrevTeam(teams[prevTeamIdx]?.country || '');
+      }
+    }).catch(() => {});
   }, [assignment?.event, assignment?.round]);
 
   useEffect(() => {
@@ -247,26 +297,6 @@ export default function ParticipantGame() {
     });
   };
 
-  const getPrevRoundData = () => {
-    if (!assignment || assignment.round <= 1 || !session) return {};
-    const { event, round, instance } = assignment;
-    const prevRound = round - 1;
-    const prevWs = findWorkspace(session, instance.id, event, prevRound);
-    const prevHn = findHandoffNote(session, instance.id, event, prevRound);
-
-    const teams = instance.teams;
-    const myIdx = teams.findIndex(t => t.id === team?.id);
-    const prevTeamIdx = ((myIdx - 1) + teams.length) % teams.length;
-    const prevTeam = teams[prevTeamIdx];
-
-    return {
-      prevContent: prevWs?.content || '',
-      prevHandoff: prevHn?.content || '',
-      prevTeam: prevTeam?.country
-    };
-  };
-
-  const { prevContent, prevHandoff, prevTeam } = getPrevRoundData();
   const sessionStatus = session?.status;
   const isReadOnly = sessionStatus !== 'active';
 
@@ -306,7 +336,7 @@ export default function ParticipantGame() {
           fromRound={transition.fromRound}
           toRound={transition.toRound}
           receivingTeam={getNextTeam(session, team)}
-          handoffNote={getIncomingHandoffNote(session, team, assignment)}
+          handoffNote={incomingHandoff}
           onDone={() => setTransition(null)}
         />
       )}
@@ -461,16 +491,6 @@ function DebriefRedirect({ navigate, sessionId, participant, assignment, socket 
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function findWorkspace(session, instanceId, eventName, round) {
-  // Workspace data isn't in the session state directly - look via the socket/API
-  // We manage it locally in state
-  return null;
-}
-
-function findHandoffNote(session, instanceId, eventName, round) {
-  return null;
-}
-
 function getNextTeam(session, myTeam) {
   if (!session || !myTeam) return null;
   const myInstance = session.instances?.find(i => i.teams?.some(t => t.id === myTeam.id));
@@ -480,6 +500,3 @@ function getNextTeam(session, myTeam) {
   return teams[(myIdx + 1) % teams.length];
 }
 
-function getIncomingHandoffNote(session, myTeam, assignment) {
-  return null;
-}
