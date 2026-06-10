@@ -3,6 +3,28 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
 import { BACKEND_URL } from '../config';
 
+function calculateConfig(participantCount) {
+  if (participantCount < 12) participantCount = 12;
+  if (participantCount > 50) participantCount = 50;
+  let instances, teamsPerInstance;
+  if (participantCount <= 18) {
+    instances = 1; teamsPerInstance = 3;
+  } else if (participantCount <= 30) {
+    instances = 1; teamsPerInstance = Math.min(5, Math.ceil(participantCount / 6));
+  } else if (participantCount <= 42) {
+    instances = 2; teamsPerInstance = 3;
+  } else {
+    instances = 3; teamsPerInstance = 3;
+  }
+  const totalTeams = instances * teamsPerInstance;
+  const baseSize = Math.floor(participantCount / totalTeams);
+  const extras = participantCount % totalTeams;
+  const teamSizes = Array.from({ length: totalTeams }, (_, i) =>
+    i < extras ? baseSize + 1 : baseSize
+  );
+  return { instances, teamsPerInstance, totalTeams, teamSizes, participantCount };
+}
+
 const COUNTRY_LIST = ['Brazil', 'India', 'Germany', 'Japan', 'France', 'Nigeria'];
 
 const COUNTRY_FLAGS = {
@@ -39,16 +61,12 @@ export default function FacilitatorSetup() {
 
   useEffect(() => {
     if (participantCount >= 12 && participantCount <= 50) {
-      fetch(`${BACKEND_URL}/api/config-preview?count=${participantCount}`)
-        .then(r => r.json())
-        .then(c => {
-          setConfig(c);
-          const suggestions = Array.from({ length: c.instances }, (_, i) =>
-            DEFAULT_SUGGESTIONS[i] || DEFAULT_SUGGESTIONS[0]
-          );
-          setInstanceCountries(suggestions);
-        })
-        .catch(() => {});
+      const c = calculateConfig(participantCount);
+      setConfig(c);
+      const suggestions = Array.from({ length: c.instances }, (_, i) =>
+        DEFAULT_SUGGESTIONS[i] || DEFAULT_SUGGESTIONS[0]
+      );
+      setInstanceCountries(suggestions);
     }
   }, [participantCount]);
 
