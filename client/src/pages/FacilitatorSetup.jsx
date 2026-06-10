@@ -82,25 +82,30 @@ export default function FacilitatorSetup() {
   const handleLaunch = async () => {
     setLoading(true);
     setError('');
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/sessions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          participantCount,
-          countries: instanceCountries,
-          roundDuration
-        })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setSessionData(data);
-      setStep(3);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
+    const body = JSON.stringify({ participantCount, countries: instanceCountries, roundDuration });
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/sessions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        setSessionData(data);
+        setStep(3);
+        setLoading(false);
+        return;
+      } catch (e) {
+        if (attempt < 3) {
+          setError(`Server is waking up… retrying (${attempt}/3)`);
+          await new Promise(r => setTimeout(r, 5000));
+        } else {
+          setError('Could not reach the server. Please try again in a moment.');
+        }
+      }
     }
+    setLoading(false);
   };
 
   const openDashboard = () => {
