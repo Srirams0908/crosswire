@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-navy-950 text-white min-h-screen;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-amber-500 hover:bg-amber-400 text-navy-950 font-semibold px-6 py-3 rounded-lg transition-all duration-150 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-navy-700 hover:bg-navy-600 text-white font-medium px-6 py-3 rounded-lg transition-all duration-150 active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply border border-navy-600 hover:border-navy-400 text-navy-300 hover:text-white font-medium px-6 py-3 rounded-lg transition-all duration-150;
+  }
+
+  .card {
+    @apply bg-navy-900 border border-navy-700 rounded-xl p-6;
+  }
+
+  .input-field {
+    @apply bg-navy-800 border border-navy-600 rounded-lg px-4 py-3 text-white placeholder-navy-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors w-full;
+  }
+
+  .tag {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.navy.700') transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: theme('colors.navy.700');
+    border-radius: 3px;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Sora', 'DM Sans', system-ui, sans-serif;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s ease-out forwards;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2s infinite;
+}

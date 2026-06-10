@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Database (runtime data — not committed)
+server/crosswire.db
+server/crosswire.db-shm
+server/crosswire.db-wal
+
+# Build output
+client/dist/
+
+# Test artifacts
+test-screenshots/
+e2e.js
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
