@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "start": "node server/index.js",
+    "postinstall": "npm install --prefix server",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && node --watch index.js",
     "client": "cd client && npm run dev",
