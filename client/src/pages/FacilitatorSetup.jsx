@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
+import { BACKEND_URL } from '../config';
 
 const COUNTRY_LIST = ['Brazil', 'India', 'Germany', 'Japan', 'France', 'Nigeria'];
 
@@ -38,7 +39,7 @@ export default function FacilitatorSetup() {
 
   useEffect(() => {
     if (participantCount >= 12 && participantCount <= 50) {
-      fetch(`/api/config-preview?count=${participantCount}`)
+      fetch(`${BACKEND_URL}/api/config-preview?count=${participantCount}`)
         .then(r => r.json())
         .then(c => {
           setConfig(c);
@@ -64,7 +65,7 @@ export default function FacilitatorSetup() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/sessions', {
+      const res = await fetch(`${BACKEND_URL}/api/sessions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

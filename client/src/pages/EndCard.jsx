@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import { parseContent, EVENTS_DATA } from '../data/events';
+import { BACKEND_URL } from '../config';
 
 const REFLECTION_QUESTIONS = [
   'What changed most between Round 1 and Round 3 of your event?',
@@ -27,7 +28,7 @@ export default function EndCard() {
 
   useEffect(() => {
     if (sessionId) {
-      fetch(`/api/sessions/${sessionId}/debrief`)
+      fetch(`${BACKEND_URL}/api/sessions/${sessionId}/debrief`)
         .then(r => r.json())
         .then(({ instances }) => setDebriefData(instances))
         .catch(() => {});

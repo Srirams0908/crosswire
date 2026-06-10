@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import socket from '../socket';
 import Timer from '../components/Timer';
 import { extractText } from '../data/events';
+import { BACKEND_URL } from '../config';
 
 const COUNTRY_FLAGS = {
   Brazil: '🇧🇷', India: '🇮🇳', Germany: '🇩🇪',
@@ -30,8 +31,8 @@ export default function ObserverView() {
     if (!round) return;
     try {
       const [wsRes, hnRes] = await Promise.all([
-        fetch(`/api/sessions/${sid}/workspaces?round=${round}`),
-        fetch(`/api/sessions/${sid}/handoffs`),
+        fetch(`${BACKEND_URL}/api/sessions/${sid}/workspaces?round=${round}`),
+        fetch(`${BACKEND_URL}/api/sessions/${sid}/handoffs`),
       ]);
       const wsData = await wsRes.json();
       const hnData = await hnRes.json();

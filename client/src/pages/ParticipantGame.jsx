@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import socket from '../socket';
+import { BACKEND_URL } from '../config';
 import Timer from '../components/Timer';
 import RoleCard from '../components/RoleCard';
 import StructuredWorkspace from '../components/StructuredWorkspace';
@@ -169,7 +170,7 @@ export default function ParticipantGame() {
     if (!assignment || !session) return;
     const { event, round, instance } = assignment;
 
-    fetch(`/api/sessions/${session.id}/instances/${instance.id}/assignments`)
+    fetch(`${BACKEND_URL}/api/sessions/${session.id}/instances/${instance.id}/assignments`)
       .then(r => r.json())
       .catch(() => null);
 

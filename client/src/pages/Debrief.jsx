@@ -4,6 +4,7 @@ import { generateSessionPDF } from '../utils/exportPDF';
 import AnalyticsPanel from '../components/AnalyticsPanel';
 import { parseContent, EVENTS_DATA } from '../data/events';
 import socket from '../socket';
+import { BACKEND_URL } from '../config';
 
 const COUNTRY_FLAGS = {
   Brazil: '🇧🇷', India: '🇮🇳', Germany: '🇩🇪',
@@ -43,7 +44,7 @@ export default function Debrief() {
       return;
     }
 
-    fetch(`/api/sessions/${sessionId}/debrief`)
+    fetch(`${BACKEND_URL}/api/sessions/${sessionId}/debrief`)
       .then(r => r.json())
       .then(({ instances, facilitatorNotes }) => {
         setDebriefData(instances);
@@ -57,7 +58,7 @@ export default function Debrief() {
       .catch(() => setLoading(false));
 
     if (isFac) {
-      fetch(`/api/sessions/${sessionId}/analytics`)
+      fetch(`${BACKEND_URL}/api/sessions/${sessionId}/analytics`)
         .then(r => r.json())
         .then(setAnalytics)
         .catch(() => {});
@@ -91,7 +92,7 @@ export default function Debrief() {
     if (!instData) return;
 
     try {
-      const res = await fetch('/api/sessions/' + sessionId + '/reflections', {
+      const res = await fetch(`${BACKEND_URL}/api/sessions/${sessionId}/reflections`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

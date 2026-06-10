@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { BACKEND_URL } from '../config';
 
 export default function ParticipantJoin() {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ export default function ParticipantJoin() {
     setChecking(true);
     setError('');
     try {
-      const res = await fetch(`/api/join/${code.toUpperCase()}`);
+      const res = await fetch(`${BACKEND_URL}/api/join/${code.toUpperCase()}`);
       const data = await res.json();
       if (!res.ok) {
         setError(data.error);

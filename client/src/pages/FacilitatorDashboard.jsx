@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import socket from '../socket';
 import Timer from '../components/Timer';
+import { BACKEND_URL } from '../config';
 
 const COUNTRY_FLAGS = {
   Brazil: '🇧🇷', India: '🇮🇳', Germany: '🇩🇪',
@@ -34,7 +35,7 @@ export default function FacilitatorDashboard() {
     }
 
     // Load initial state via HTTP
-    fetch(`/api/sessions/facilitator/${facilitatorCode}`)
+    fetch(`${BACKEND_URL}/api/sessions/facilitator/${facilitatorCode}`)
       .then(r => r.json())
       .then(s => {
         setSession(s);
@@ -115,7 +116,7 @@ export default function FacilitatorDashboard() {
     clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {
       try {
-        await fetch(`/api/sessions/${sessionId}/notes`, {
+        await fetch(`${BACKEND_URL}/api/sessions/${sessionId}/notes`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notes: value }),
