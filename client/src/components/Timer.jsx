@@ -4,10 +4,10 @@ export default function Timer({ remaining, total, compact = false }) {
   const pct = total > 0 ? (remaining / total) * 100 : 0;
 
   const color = remaining <= 60
-    ? 'text-red-400'
+    ? 'text-red-600'
     : remaining <= 120
-    ? 'text-amber-400'
-    : 'text-white';
+    ? 'text-amber-600'
+    : 'text-gray-900';
 
   const barColor = remaining <= 60
     ? 'bg-red-500'
@@ -28,7 +28,7 @@ export default function Timer({ remaining, total, compact = false }) {
       <div className={`font-display text-4xl font-bold tabular-nums ${color}`}>
         {mins}:{String(secs).padStart(2, '0')}
       </div>
-      <div className="h-1.5 bg-navy-700 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-1000 ${barColor}`}
           style={{ width: `${pct}%` }}

@@ -5,37 +5,37 @@ const COUNTRY_FLAGS = {
 
 export default function DebriefView({ instanceData }) {
   if (!instanceData) return null;
-  const { instance, teams, eventData, reflections } = instanceData;
+  const { eventData, reflections } = instanceData;
 
   return (
     <div className="space-y-8">
       {eventData.map(({ eventName, rounds }) => (
         <div key={eventName} className="card">
-          <h3 className="font-display text-lg font-bold text-amber-500 mb-5">{eventName}</h3>
+          <h3 className="font-display text-lg font-bold text-amber-600 mb-5">{eventName}</h3>
           <div className="space-y-4">
             {rounds.map(({ round, team, content, handoffNote }) => (
               <div key={round} className="relative pl-6">
-                <div className="absolute left-0 top-0 w-5 h-5 rounded-full bg-navy-700 flex items-center justify-center text-xs text-navy-400 font-mono">
+                <div className="absolute left-0 top-0 w-5 h-5 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center text-xs text-gray-600 font-mono">
                   {round}
                 </div>
                 {round < 3 && (
-                  <div className="absolute left-2 top-5 w-px h-full bg-navy-700" />
+                  <div className="absolute left-2 top-5 w-px h-full bg-gray-200" />
                 )}
-                <div className="bg-navy-800 rounded-xl p-4">
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                   {team && (
                     <div className="flex items-center gap-2 mb-2">
                       <span>{COUNTRY_FLAGS[team.country]}</span>
-                      <span className="text-sm font-semibold text-white">{team.country} Team</span>
-                      <span className="text-xs text-navy-500">Round {round}</span>
+                      <span className="text-sm font-semibold text-gray-900">{team.country} Team</span>
+                      <span className="text-xs text-gray-400">Round {round}</span>
                     </div>
                   )}
-                  <p className="text-sm text-navy-300 whitespace-pre-wrap leading-relaxed">
-                    {content || <span className="text-navy-600 italic">No content written.</span>}
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                    {content || <span className="text-gray-400 italic">No content written.</span>}
                   </p>
                   {handoffNote && (
-                    <div className="mt-3 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
-                      <p className="text-xs text-amber-400 font-medium mb-1">Handoff Note →</p>
-                      <p className="text-sm text-navy-200 italic">"{handoffNote}"</p>
+                    <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                      <p className="text-xs text-amber-700 font-semibold mb-1">Handoff Note →</p>
+                      <p className="text-sm text-amber-900 italic">"{handoffNote}"</p>
                     </div>
                   )}
                 </div>
@@ -47,14 +47,14 @@ export default function DebriefView({ instanceData }) {
 
       {reflections && reflections.length > 0 && (
         <div className="card">
-          <h3 className="font-display text-lg font-bold text-white mb-4">Team Reflections</h3>
+          <h3 className="font-display text-lg font-bold text-gray-900 mb-4">Team Reflections</h3>
           <div className="space-y-4">
             {reflections.map((r, i) => (
-              <div key={i} className="bg-navy-800 rounded-xl p-4">
+              <div key={i} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <span>{COUNTRY_FLAGS[r.country]}</span>
-                  <span className="font-medium text-white text-sm">{r.name}</span>
-                  <span className="text-navy-500 text-xs">· {r.role}</span>
+                  <span className="font-medium text-gray-900 text-sm">{r.name}</span>
+                  <span className="text-gray-400 text-xs">· {r.role}</span>
                 </div>
                 {r.q1 && <ReflectionItem q="What changed most between Round 1 and Round 3?" a={r.q1} />}
                 {r.q2 && <ReflectionItem q="What was the biggest communication challenge?" a={r.q2} />}
@@ -71,8 +71,8 @@ export default function DebriefView({ instanceData }) {
 function ReflectionItem({ q, a }) {
   return (
     <div className="mb-2">
-      <p className="text-xs text-navy-400 mb-0.5">{q}</p>
-      <p className="text-sm text-navy-200">{a}</p>
+      <p className="text-xs text-gray-500 mb-0.5">{q}</p>
+      <p className="text-sm text-gray-800">{a}</p>
     </div>
   );
 }

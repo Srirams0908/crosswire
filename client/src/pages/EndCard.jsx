@@ -46,18 +46,16 @@ export default function EndCard() {
   };
 
   return (
-    <div className="min-h-screen bg-navy-950 flex flex-col items-center justify-center px-6 py-16">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-6 py-16">
       <div className="max-w-2xl w-full text-center animate-fade-in">
 
-        {/* Globe */}
         <div className="text-6xl mb-8">🌍</div>
 
-        {/* Main message */}
         <h1 className="font-display text-3xl md:text-4xl font-bold text-amber-500 mb-6 leading-tight">
           You just experienced CrossWire.
         </h1>
 
-        <div className="text-navy-200 text-base md:text-lg leading-relaxed space-y-4 mb-10 text-balance">
+        <div className="text-gray-700 text-base md:text-lg leading-relaxed space-y-4 mb-10 text-balance">
           <p>
             What felt like a simple planning task was actually a live experiment in how culture,
             communication style, and distance shape the way teams work — and hand off work to each other.
@@ -66,14 +64,13 @@ export default function EndCard() {
             The friction you felt? The confusion when you received someone else's plan?
             The assumptions that didn't travel?
           </p>
-          <p className="text-navy-300 font-medium">
+          <p className="text-gray-900 font-medium">
             That happens in real organizations every day.
           </p>
         </div>
 
-        {/* Takeaways */}
-        <div className="bg-navy-900 border border-navy-700 rounded-2xl p-6 mb-10 text-left">
-          <p className="text-xs text-navy-400 uppercase tracking-wider font-medium mb-4">What to take with you</p>
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-10 text-left shadow-sm">
+          <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-4">What to take with you</p>
           <ul className="space-y-3">
             {[
               'Communication style is invisible until it collides with another one',
@@ -82,19 +79,17 @@ export default function EndCard() {
             ].map((item, i) => (
               <li key={i} className="flex items-start gap-3">
                 <span className="text-amber-500 font-bold mt-0.5 flex-shrink-0">—</span>
-                <span className="text-navy-200 text-sm leading-relaxed">{item}</span>
+                <span className="text-gray-700 text-sm leading-relaxed">{item}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Sign-off */}
-        <p className="text-navy-300 text-lg font-medium mb-2">Thank you for playing.</p>
-        <p className="text-navy-500 text-sm mb-10">
+        <p className="text-gray-700 text-lg font-medium mb-2">Thank you for playing.</p>
+        <p className="text-gray-400 text-sm mb-10">
           CrossWire — built to make the invisible visible.
         </p>
 
-        {/* Action buttons */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={handleParticipantPDF}
@@ -103,7 +98,7 @@ export default function EndCard() {
           >
             {exporting ? (
               <>
-                <span className="inline-block w-3.5 h-3.5 border-2 border-navy-400/30 border-t-navy-400 rounded-full animate-spin" />
+                <span className="inline-block w-3.5 h-3.5 border-2 border-gray-400/30 border-t-gray-600 rounded-full animate-spin" />
                 Generating…
               </>
             ) : (
@@ -151,7 +146,6 @@ async function exportParticipantPDF(debriefData, sessionId, participantId, myIns
     }
   };
 
-  // Find the participant's instance and team
   const instData = debriefData.find(d => d.instance.id === myInstanceId) || debriefData[0];
   if (!instData) return;
 
@@ -159,7 +153,6 @@ async function exportParticipantPDF(debriefData, sessionId, participantId, myIns
   const myParticipant = myTeam?.members?.find(m => m.id === participantId);
   const myReflection = instData.reflections?.find(r => r.participant_id === participantId);
 
-  // ── Cover ──
   fill(AMBER); doc.rect(MARGIN, MARGIN, CW, 1.2, 'F');
   y = MARGIN + 8;
   font('bold', 22); color(NAVY);
@@ -175,7 +168,6 @@ async function exportParticipantPDF(debriefData, sessionId, participantId, myIns
   doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), 210 - MARGIN, y + 7, { align: 'right' });
   y += 24;
 
-  // ── My team's work across all rounds ──
   font('bold', 11); color(NAVY);
   doc.text('My Team\'s Work', MARGIN, y); y += 8;
 
@@ -239,7 +231,6 @@ async function exportParticipantPDF(debriefData, sessionId, participantId, myIns
     });
   });
 
-  // ── Reflections ──
   if (myReflection) {
     need(16);
     y += 4;
@@ -263,7 +254,6 @@ async function exportParticipantPDF(debriefData, sessionId, participantId, myIns
     });
   }
 
-  // Footer on all pages
   const total = doc.getNumberOfPages();
   for (let i = 1; i <= total; i++) {
     doc.setPage(i);

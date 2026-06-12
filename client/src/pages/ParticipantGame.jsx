@@ -403,13 +403,13 @@ export default function ParticipantGame() {
         </div>
       )}
 
-      {/* Top bar — stays dark for contrast */}
-      <header className="bg-navy-900 border-b border-navy-800 px-4 py-3 flex items-center justify-between flex-shrink-0">
+      {/* Top bar */}
+      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0 shadow-sm">
         <div className="flex items-center gap-3">
           <span className="text-xl">{COUNTRY_FLAGS[team?.country]}</span>
           <div>
-            <div className="font-display font-bold text-white text-sm">{team?.country} Team</div>
-            <div className="text-gray-400 text-xs">{participant?.name} · <span className="text-amber-400">{participant?.role}</span></div>
+            <div className="font-display font-bold text-gray-900 text-sm">{team?.country} Team</div>
+            <div className="text-gray-500 text-xs">{participant?.name} · <span className="text-amber-600 font-medium">{participant?.role}</span></div>
           </div>
         </div>
 
@@ -417,7 +417,7 @@ export default function ParticipantGame() {
           {assignment && (
             <div className="text-right hidden sm:block">
               <div className="text-xs text-gray-400">Round {session.current_round} of 3</div>
-              <div className="text-xs text-amber-400 font-medium">{assignment.event}</div>
+              <div className="text-xs text-amber-600 font-semibold">{assignment.event}</div>
             </div>
           )}
           <div className="text-right">
@@ -508,9 +508,9 @@ function WaitingRoom({ participant, team, session, connected }) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Dark header for branding */}
-      <header className="bg-navy-900 border-b border-navy-800 px-6 py-4 flex items-center justify-between">
-        <span className="font-display text-xl font-bold text-white">CrossWire</span>
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm">
+        <span className="font-display text-xl font-bold text-gray-900">CrossWire</span>
         <div className="flex items-center gap-2 text-gray-400 text-sm">
           <div className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-400' : 'bg-red-400'}`} />
           <span>{connected ? 'Connected' : 'Disconnected'}</span>

@@ -16,7 +16,6 @@ export default function ObserverView() {
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
   const [remaining, setRemaining] = useState(0);
-  // workspaces keyed by `${instanceId}:${eventName}:${round}`
   const [workspaces, setWorkspaces] = useState({});
   const [handoffs, setHandoffs] = useState({});
   const [connected, setConnected] = useState(false);
@@ -26,7 +25,6 @@ export default function ObserverView() {
   const observerCode = localStorage.getItem('observerCode');
   const sessionId = localStorage.getItem('observerSessionId');
 
-  // Load workspaces for the current round from REST, then keep live via socket
   const loadWorkspaces = async (sid, round) => {
     if (!round) return;
     try {
@@ -67,7 +65,6 @@ export default function ObserverView() {
 
     socket.on('session:state', (s) => {
       setSession(prev => {
-        // If round changed, reload all workspaces
         if (prev?.current_round !== s.current_round) {
           loadWorkspaces(s.id, s.current_round);
         }
@@ -106,7 +103,6 @@ export default function ObserverView() {
     };
   }, []);
 
-  // Compute event assignment for a given instance + round
   const getAssignment = (instance, round) => {
     if (!round) return [];
     return (instance.teams || []).map((team, idx) => ({
@@ -117,9 +113,9 @@ export default function ObserverView() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-navy-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="card text-center max-w-sm">
-          <p className="text-red-400 font-medium mb-4">{error}</p>
+          <p className="text-red-600 font-medium mb-4">{error}</p>
           <button onClick={() => navigate('/observer')} className="btn-primary">Back</button>
         </div>
       </div>
@@ -128,8 +124,8 @@ export default function ObserverView() {
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-navy-950 flex items-center justify-center">
-        <div className="text-navy-400 text-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-500 text-center">
           <div className="text-2xl mb-3 animate-pulse">⟳</div>
           <p>Connecting to session...</p>
         </div>
@@ -143,15 +139,15 @@ export default function ObserverView() {
   const currentInstance = instances[activeInstance];
 
   return (
-    <div className="min-h-screen bg-navy-950 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top bar */}
-      <header className="bg-navy-900 border-b border-navy-700 px-5 py-3 flex items-center justify-between flex-shrink-0">
+      <header className="bg-white border-b border-gray-200 px-5 py-3 flex items-center justify-between flex-shrink-0 shadow-sm">
         <div className="flex items-center gap-3">
-          <span className="font-display text-lg font-bold text-white">CrossWire</span>
-          <span className="text-navy-600">·</span>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-navy-800 border border-navy-700">
-            <span className="text-navy-400 text-xs">👁</span>
-            <span className="text-navy-400 text-xs font-medium">Observer</span>
+          <span className="font-display text-lg font-bold text-gray-900">CrossWire</span>
+          <span className="text-gray-300">·</span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 border border-gray-200">
+            <span className="text-gray-500 text-xs">👁</span>
+            <span className="text-gray-600 text-xs font-medium">Observer</span>
           </div>
           <StatusBadge status={status} round={round} />
         </div>
@@ -160,22 +156,22 @@ export default function ObserverView() {
           {status === 'active' && round > 0 && (
             <Timer remaining={remaining} total={session.round_duration} compact />
           )}
-          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-500' : 'bg-red-500'}`}
+          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-500' : 'bg-red-400'}`}
             title={connected ? 'Live' : 'Disconnected'} />
         </div>
       </header>
 
-      {/* Instance tabs (only if >1 instance) */}
+      {/* Instance tabs */}
       {instances.length > 1 && (
-        <div className="bg-navy-900/50 border-b border-navy-700 px-5 flex gap-1 flex-shrink-0">
+        <div className="bg-white border-b border-gray-200 px-5 flex gap-1 flex-shrink-0">
           {instances.map((inst, i) => (
             <button
               key={inst.id}
               onClick={() => setActiveInstance(i)}
               className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
                 activeInstance === i
-                  ? 'border-amber-500 text-amber-500'
-                  : 'border-transparent text-navy-400 hover:text-white'
+                  ? 'border-amber-500 text-amber-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-900'
               }`}
             >
               Instance {inst.instance_number}
@@ -189,8 +185,8 @@ export default function ObserverView() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center animate-fade-in">
             <div className="text-4xl mb-4">⏳</div>
-            <h2 className="font-display text-2xl font-bold text-white mb-2">Waiting for session to start</h2>
-            <p className="text-navy-400 text-sm">
+            <h2 className="font-display text-2xl font-bold text-gray-900 mb-2">Waiting for session to start</h2>
+            <p className="text-gray-500 text-sm">
               {instances.flatMap(i => i.teams).flatMap(t => t.members || []).length} participant{instances.flatMap(i => i.teams).flatMap(t => t.members || []).length !== 1 ? 's' : ''} joined so far
             </p>
             <ParticipantRoster instances={instances} />
@@ -203,8 +199,8 @@ export default function ObserverView() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center animate-fade-in">
             <div className="text-4xl mb-4">✅</div>
-            <h2 className="font-display text-2xl font-bold text-white mb-2">All rounds complete</h2>
-            <p className="text-navy-400 text-sm">Session has moved to debrief.</p>
+            <h2 className="font-display text-2xl font-bold text-gray-900 mb-2">All rounds complete</h2>
+            <p className="text-gray-500 text-sm">Session has moved to debrief.</p>
           </div>
         </div>
       )}
@@ -217,13 +213,13 @@ export default function ObserverView() {
             <div className="flex gap-2">
               {[1, 2, 3].map(r => (
                 <div key={r} className={`h-1.5 w-12 rounded-full transition-colors ${
-                  r < round ? 'bg-amber-500' : r === round ? 'bg-amber-500/60' : 'bg-navy-700'
+                  r < round ? 'bg-amber-500' : r === round ? 'bg-amber-400' : 'bg-gray-200'
                 }`} />
               ))}
             </div>
-            <span className="text-navy-400 text-xs">Round {round} of 3</span>
-            {status === 'paused' && <span className="text-amber-400 text-xs font-medium">· Paused</span>}
-            {status === 'handoff' && <span className="text-navy-400 text-xs font-medium">· Handoff in progress</span>}
+            <span className="text-gray-500 text-xs">Round {round} of 3</span>
+            {status === 'paused' && <span className="text-amber-600 text-xs font-medium">· Paused</span>}
+            {status === 'handoff' && <span className="text-gray-500 text-xs font-medium">· Handoff in progress</span>}
           </div>
 
           {/* Team workspace grid */}
@@ -256,7 +252,7 @@ export default function ObserverView() {
       {/* No round started yet but session not waiting */}
       {status !== 'waiting' && status !== 'debrief' && !['active', 'paused', 'handoff'].includes(status) && (
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-navy-500 text-sm">Session status: {status}</p>
+          <p className="text-gray-400 text-sm">Session status: {status}</p>
         </div>
       )}
     </div>
@@ -274,20 +270,20 @@ function WorkspaceCard({ team, event, round, content, handoff, memberCount, onli
   const handoffContent = handoff?.content || '';
 
   return (
-    <div className="bg-navy-900 border border-navy-700 rounded-xl flex flex-col overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-xl flex flex-col overflow-hidden shadow-sm">
       {/* Card header */}
-      <div className="px-4 py-3 border-b border-navy-700 flex items-center justify-between flex-shrink-0">
+      <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between flex-shrink-0 bg-gray-50">
         <div className="flex items-center gap-2.5">
           <span className="text-xl">{COUNTRY_FLAGS[team.country]}</span>
           <div>
-            <div className="font-semibold text-white text-sm leading-tight">{team.country}</div>
-            <div className="text-navy-500 text-xs">{event}</div>
+            <div className="font-semibold text-gray-900 text-sm leading-tight">{team.country}</div>
+            <div className="text-gray-400 text-xs">{event}</div>
           </div>
         </div>
         <div className="flex items-center gap-2.5">
           {/* Online indicator */}
-          <div className="flex items-center gap-1 text-xs text-navy-500">
-            <div className={`w-1.5 h-1.5 rounded-full ${onlineCount > 0 ? 'bg-emerald-500' : 'bg-navy-600'}`} />
+          <div className="flex items-center gap-1 text-xs text-gray-400">
+            <div className={`w-1.5 h-1.5 rounded-full ${onlineCount > 0 ? 'bg-emerald-500' : 'bg-gray-300'}`} />
             {onlineCount}/{memberCount}
           </div>
           {/* Handoff indicator */}
@@ -295,10 +291,10 @@ function WorkspaceCard({ team, event, round, content, handoff, memberCount, onli
             <div
               className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                 handoffSubmitted
-                  ? 'bg-emerald-500/20 text-emerald-400'
+                  ? 'bg-emerald-100 text-emerald-700'
                   : handoffContent
-                  ? 'bg-amber-500/20 text-amber-400'
-                  : 'bg-navy-700 text-navy-500'
+                  ? 'bg-amber-100 text-amber-700'
+                  : 'bg-gray-100 text-gray-400'
               }`}
               title={handoffSubmitted ? 'Handoff note submitted' : handoffContent ? 'Handoff note in progress' : 'No handoff note yet'}
             >
@@ -308,23 +304,23 @@ function WorkspaceCard({ team, event, round, content, handoff, memberCount, onli
         </div>
       </div>
 
-      {/* Workspace content — render extracted plain text for readability */}
+      {/* Workspace content */}
       <div className="flex-1 p-4 min-h-40 max-h-72 overflow-y-auto scrollbar-thin">
         {plainText ? (
-          <p className="text-sm text-navy-200 whitespace-pre-wrap leading-relaxed">{plainText}</p>
+          <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{plainText}</p>
         ) : (
-          <p className="text-sm text-navy-600 italic">Nothing written yet...</p>
+          <p className="text-sm text-gray-400 italic">Nothing written yet...</p>
         )}
       </div>
 
-      {/* Card footer — stats */}
-      <div className="px-4 py-2 border-t border-navy-800 flex items-center justify-between flex-shrink-0">
-        <div className="flex gap-3 text-xs text-navy-600">
+      {/* Card footer */}
+      <div className="px-4 py-2 border-t border-gray-100 flex items-center justify-between flex-shrink-0 bg-gray-50">
+        <div className="flex gap-3 text-xs text-gray-400">
           <span>{wordCount} word{wordCount !== 1 ? 's' : ''}</span>
           <span>{charCount} char{charCount !== 1 ? 's' : ''}</span>
         </div>
         {handoffSubmitted && handoffContent && (
-          <div className="max-w-[55%] text-xs text-navy-400 truncate" title={handoffContent}>
+          <div className="max-w-[55%] text-xs text-gray-500 truncate" title={handoffContent}>
             "{handoffContent}"
           </div>
         )}
@@ -335,12 +331,12 @@ function WorkspaceCard({ team, event, round, content, handoff, memberCount, onli
 
 function StatusBadge({ status, round }) {
   const cfg = {
-    waiting:  { cls: 'bg-navy-700 text-navy-400',         label: 'Waiting' },
-    active:   { cls: 'bg-emerald-500/20 text-emerald-400', label: `Round ${round} · Live` },
-    paused:   { cls: 'bg-amber-500/20 text-amber-400',    label: `Round ${round} · Paused` },
-    handoff:  { cls: 'bg-blue-500/20 text-blue-400',      label: 'Handoff' },
-    debrief:  { cls: 'bg-purple-500/20 text-purple-400',  label: 'Debrief' },
-  }[status] || { cls: 'bg-navy-700 text-navy-400', label: status };
+    waiting:  { cls: 'bg-gray-100 text-gray-500',          label: 'Waiting' },
+    active:   { cls: 'bg-emerald-100 text-emerald-700',    label: `Round ${round} · Live` },
+    paused:   { cls: 'bg-amber-100 text-amber-700',        label: `Round ${round} · Paused` },
+    handoff:  { cls: 'bg-blue-100 text-blue-700',          label: 'Handoff' },
+    debrief:  { cls: 'bg-purple-100 text-purple-700',      label: 'Debrief' },
+  }[status] || { cls: 'bg-gray-100 text-gray-500', label: status };
 
   return (
     <span className={`tag text-xs ${cfg.cls}`}>{cfg.label}</span>
@@ -359,15 +355,15 @@ function ParticipantRoster({ instances }) {
         const members = team.members || [];
         if (members.length === 0) return null;
         return (
-          <div key={team.id} className="bg-navy-800 rounded-xl p-3 border border-navy-700">
+          <div key={team.id} className="bg-white rounded-xl p-3 border border-gray-200 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <span>{COUNTRY_FLAGS[team.country]}</span>
-              <span className="text-sm font-medium text-white">{team.country}</span>
-              {instances.length > 1 && <span className="text-xs text-navy-500">· Inst. {team.instanceNum}</span>}
+              <span className="text-sm font-medium text-gray-900">{team.country}</span>
+              {instances.length > 1 && <span className="text-xs text-gray-400">· Inst. {team.instanceNum}</span>}
             </div>
             {members.map(m => (
-              <div key={m.id} className="flex items-center gap-1.5 text-xs text-navy-400 py-0.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/60" />
+              <div key={m.id} className="flex items-center gap-1.5 text-xs text-gray-500 py-0.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 {m.name}
               </div>
             ))}

@@ -174,29 +174,29 @@ export default function FacilitatorDashboard() {
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-navy-950 flex items-center justify-center">
-        <div className="text-navy-400 text-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-400 text-center">
           <div className="text-2xl mb-3 animate-pulse">⟳</div>
           <p>Loading session...</p>
-          {error && <p className="text-red-400 mt-2 text-sm">{error}</p>}
+          {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-navy-950 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top bar */}
-      <header className="bg-navy-900 border-b border-navy-700 px-6 py-4 flex items-center justify-between flex-shrink-0">
+      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between flex-shrink-0 shadow-sm">
         <div className="flex items-center gap-4">
-          <span className="font-display text-xl font-bold text-white">CrossWire</span>
-          <span className="text-navy-500">·</span>
-          <span className="text-navy-400 text-sm">Facilitator Dashboard</span>
+          <span className="font-display text-xl font-bold text-gray-900">CrossWire</span>
+          <span className="text-gray-300">·</span>
+          <span className="text-gray-500 text-sm">Facilitator Dashboard</span>
           <span className={`tag text-xs ml-2 ${
-            status === 'active' ? 'bg-emerald-500/20 text-emerald-400' :
-            status === 'paused' ? 'bg-amber-500/20 text-amber-400' :
-            status === 'debrief' ? 'bg-purple-500/20 text-purple-400' :
-            'bg-navy-700 text-navy-400'
+            status === 'active' ? 'bg-emerald-100 text-emerald-700' :
+            status === 'paused' ? 'bg-amber-100 text-amber-700' :
+            status === 'debrief' ? 'bg-purple-100 text-purple-700' :
+            'bg-gray-100 text-gray-500'
           }`}>
             {status === 'waiting' ? 'Waiting' :
              status === 'active' ? `Round ${round} Active` :
@@ -220,7 +220,7 @@ export default function FacilitatorDashboard() {
             📢 Broadcast
           </button>
           {(status === 'active' || status === 'paused') && (
-            <button onClick={() => setShowCurveball(!showCurveball)} className="btn-ghost text-sm px-3 py-2 border-red-500/40 text-red-400 hover:bg-red-500/10">
+            <button onClick={() => setShowCurveball(!showCurveball)} className="btn-ghost text-sm px-3 py-2 border-red-300 text-red-600 hover:bg-red-50">
               ⚡ Curveball
             </button>
           )}
@@ -232,7 +232,7 @@ export default function FacilitatorDashboard() {
 
       {/* Broadcast panel */}
       {showBroadcast && (
-        <div className="bg-navy-800 border-b border-navy-700 px-6 py-3 flex gap-3 animate-fade-in">
+        <div className="bg-blue-50 border-b border-blue-200 px-6 py-3 flex gap-3 animate-fade-in">
           <input
             value={broadcastMsg}
             onChange={e => setBroadcastMsg(e.target.value)}
@@ -244,20 +244,20 @@ export default function FacilitatorDashboard() {
           <button onClick={handleBroadcast} disabled={!broadcastMsg.trim()} className="btn-primary text-sm px-4 py-2">
             Send
           </button>
-          <button onClick={() => setShowBroadcast(false)} className="text-navy-400 hover:text-white px-2">✕</button>
+          <button onClick={() => setShowBroadcast(false)} className="text-gray-400 hover:text-gray-700 px-2">✕</button>
         </div>
       )}
 
       {/* Curveball panel */}
       {showCurveball && (
-        <div className="bg-red-950/60 border-b border-red-900/50 px-6 py-4 animate-fade-in">
-          <p className="text-xs text-red-400 uppercase tracking-wider font-medium mb-3">⚡ Fire a Curveball — visible to all participants immediately</p>
+        <div className="bg-red-50 border-b border-red-200 px-6 py-4 animate-fade-in">
+          <p className="text-xs text-red-600 uppercase tracking-wider font-semibold mb-3">⚡ Fire a Curveball — visible to all participants immediately</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-3">
             {CURVEBALL_PRESETS.map((preset, i) => (
               <button
                 key={i}
                 onClick={() => handleCurveball(preset)}
-                className="text-left text-xs text-red-200 bg-red-900/40 border border-red-800/50 rounded-lg px-3 py-2 hover:bg-red-800/50 transition-colors"
+                className="text-left text-xs text-red-800 bg-white border border-red-200 rounded-lg px-3 py-2 hover:bg-red-50 transition-colors"
               >
                 {preset}
               </button>
@@ -269,31 +269,31 @@ export default function FacilitatorDashboard() {
               onChange={e => setCurveballMsg(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleCurveball()}
               placeholder="Or write a custom curveball..."
-              className="input-field flex-1 text-sm py-2 border-red-800/50"
+              className="input-field flex-1 text-sm py-2"
             />
             <button onClick={() => handleCurveball()} disabled={!curveballMsg.trim()} className="text-sm px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-medium disabled:opacity-40 transition-colors">
               Fire
             </button>
-            <button onClick={() => setShowCurveball(false)} className="text-navy-400 hover:text-white px-2">✕</button>
+            <button onClick={() => setShowCurveball(false)} className="text-gray-400 hover:text-gray-700 px-2">✕</button>
           </div>
         </div>
       )}
 
       <div className="flex-1 flex flex-col lg:flex-row min-h-0">
         {/* Controls sidebar */}
-        <aside className="lg:w-64 bg-navy-900/50 border-b lg:border-b-0 lg:border-r border-navy-700 p-5 flex flex-col gap-5 flex-shrink-0 lg:overflow-y-auto scrollbar-thin lg:h-full">
+        <aside className="lg:w-64 bg-white border-b lg:border-b-0 lg:border-r border-gray-200 p-5 flex flex-col gap-5 flex-shrink-0 lg:overflow-y-auto scrollbar-thin lg:h-full">
           {/* Master timer */}
           {round > 0 && (
             <div className="card">
-              <p className="text-xs text-navy-400 uppercase tracking-wider font-medium mb-3">Round Timer</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3">Round Timer</p>
               <Timer remaining={remaining} total={session.round_duration} />
-              <p className="text-xs text-navy-500 mt-2">Round {round} of 3</p>
+              <p className="text-xs text-gray-400 mt-2">Round {round} of 3</p>
             </div>
           )}
 
           {/* Control buttons */}
           <div className="space-y-2">
-            <p className="text-xs text-navy-400 uppercase tracking-wider font-medium">Controls</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Controls</p>
 
             {(status === 'waiting' || status === 'handoff') && (
               <button onClick={handleStartRound} className="btn-primary w-full text-sm">
@@ -306,7 +306,7 @@ export default function FacilitatorDashboard() {
                 <button onClick={handlePause} className="btn-secondary w-full text-sm">
                   ⏸ Pause Round
                 </button>
-                <button onClick={handleTriggerHandoff} className="btn-ghost w-full text-sm border-amber-500/40 text-amber-400 hover:bg-amber-500/10">
+                <button onClick={handleTriggerHandoff} className="w-full text-sm px-4 py-2.5 rounded-lg border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 font-medium transition-colors">
                   ⏭ Trigger Handoff
                 </button>
               </>
@@ -319,7 +319,7 @@ export default function FacilitatorDashboard() {
             )}
 
             {(status === 'active' || status === 'paused' || status === 'handoff') && round === 3 && (
-              <button onClick={handleSkipDebrief} className="btn-ghost w-full text-sm border-purple-500/40 text-purple-400 hover:bg-purple-500/10">
+              <button onClick={handleSkipDebrief} className="w-full text-sm px-4 py-2.5 rounded-lg border border-purple-200 text-purple-700 bg-purple-50 hover:bg-purple-100 font-medium transition-colors">
                 → Skip to Debrief
               </button>
             )}
@@ -333,18 +333,18 @@ export default function FacilitatorDashboard() {
 
           {/* Session info */}
           <div className="card text-xs space-y-2">
-            <p className="text-navy-400 uppercase tracking-wider font-medium mb-1">Session</p>
+            <p className="text-gray-500 uppercase tracking-wider font-semibold mb-1">Session</p>
             <div className="flex justify-between">
-              <span className="text-navy-500">Instances</span>
-              <span className="text-white">{session.instances?.length}</span>
+              <span className="text-gray-400">Instances</span>
+              <span className="text-gray-900 font-medium">{session.instances?.length}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-navy-500">Round duration</span>
-              <span className="text-white">{session.round_duration / 60}m</span>
+              <span className="text-gray-400">Round duration</span>
+              <span className="text-gray-900 font-medium">{session.round_duration / 60}m</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-navy-500">Participants</span>
-              <span className="text-white">
+              <span className="text-gray-400">Participants</span>
+              <span className="text-gray-900 font-medium">
                 {session.instances?.flatMap(i => i.teams).flatMap(t => t.members || []).length}
               </span>
             </div>
@@ -353,12 +353,12 @@ export default function FacilitatorDashboard() {
           {/* Facilitator notes */}
           <div className="flex flex-col gap-1.5 flex-1 min-h-0">
             <div className="flex items-center justify-between">
-              <p className="text-xs text-navy-400 uppercase tracking-wider font-medium">
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
                 Private Notes
               </p>
               <span className={`text-xs transition-opacity duration-300 ${
-                saveStatus === 'saved'  ? 'text-emerald-500 opacity-100' :
-                saveStatus === 'saving' ? 'text-navy-500 opacity-100' :
+                saveStatus === 'saved'  ? 'text-emerald-600 opacity-100' :
+                saveStatus === 'saving' ? 'text-gray-400 opacity-100' :
                 'opacity-0'
               }`}>
                 {saveStatus === 'saving' ? 'Saving…' : '✓ Saved'}
@@ -385,14 +385,14 @@ export default function FacilitatorDashboard() {
                 <div key={instance.id} className="card">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="font-display font-bold text-white">Instance {instance.instance_number}</h3>
-                      <p className="text-xs text-navy-400 mt-0.5">
+                      <h3 className="font-display font-bold text-gray-900">Instance {instance.instance_number}</h3>
+                      <p className="text-xs text-gray-500 mt-0.5">
                         {totalParticipants} participant{totalParticipants !== 1 ? 's' : ''} · {instance.teams.length} teams
                       </p>
                     </div>
                     <span className={`tag text-xs ${
-                      instance.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' :
-                      'bg-navy-700 text-navy-400'
+                      instance.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
+                      'bg-gray-100 text-gray-500'
                     }`}>{instance.status}</span>
                   </div>
 
@@ -430,24 +430,24 @@ function TeamPanel({ team, assignment, round, handoffDone }) {
   const joinUrl = `${window.location.origin}/join?code=${team.join_code}`;
 
   return (
-    <div className="bg-navy-800 rounded-xl p-4 border border-navy-700">
+    <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="text-lg">{COUNTRY_FLAGS[team.country]}</span>
           <div>
-            <div className="font-semibold text-white text-sm">{team.country}</div>
-            <div className="text-xs text-navy-500 font-mono">{team.join_code}</div>
+            <div className="font-semibold text-gray-900 text-sm">{team.country}</div>
+            <div className="text-xs text-gray-400 font-mono">{team.join_code}</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {isHandoffRound && (
-            <div className={`w-2.5 h-2.5 rounded-full ${handoffDone ? 'bg-emerald-500' : 'bg-red-500/60'}`}
+            <div className={`w-2.5 h-2.5 rounded-full ${handoffDone ? 'bg-emerald-500' : 'bg-red-400'}`}
               title={handoffDone ? 'Handoff note submitted' : 'Handoff note pending'}
             />
           )}
           <button
             onClick={() => setShowQR(v => !v)}
-            className="text-navy-500 hover:text-amber-400 transition-colors text-xs px-1.5 py-0.5 rounded border border-navy-700 hover:border-amber-500/50"
+            className="text-gray-400 hover:text-amber-600 transition-colors text-xs px-1.5 py-0.5 rounded border border-gray-200 hover:border-amber-300"
             title="Toggle QR code"
           >
             QR
@@ -456,30 +456,30 @@ function TeamPanel({ team, assignment, round, handoffDone }) {
       </div>
 
       {showQR && (
-        <div className="flex flex-col items-center py-3 mb-3 bg-navy-900 rounded-xl border border-navy-700 animate-fade-in">
-          <div className="bg-white p-2.5 rounded-lg mb-2">
+        <div className="flex flex-col items-center py-3 mb-3 bg-gray-50 rounded-xl border border-gray-200 animate-fade-in">
+          <div className="bg-white p-2.5 rounded-lg mb-2 border border-gray-100">
             <QRCodeSVG value={joinUrl} size={96} level="M" />
           </div>
-          <span className="font-display text-lg font-bold tracking-widest text-amber-500">{team.join_code}</span>
-          <span className="text-xs text-navy-500 mt-0.5">scan to join</span>
+          <span className="font-display text-lg font-bold tracking-widest text-amber-600">{team.join_code}</span>
+          <span className="text-xs text-gray-400 mt-0.5">scan to join</span>
         </div>
       )}
 
       {assignment && (
-        <div className="text-xs text-navy-400 bg-navy-700/50 rounded-lg px-3 py-2 mb-3">
-          Working on: <span className="text-white font-medium">{assignment.event}</span>
+        <div className="text-xs text-gray-500 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mb-3">
+          Working on: <span className="text-gray-900 font-medium">{assignment.event}</span>
         </div>
       )}
 
       <div className="space-y-1">
         {members.length === 0 ? (
-          <p className="text-xs text-navy-600 italic">No members yet</p>
+          <p className="text-xs text-gray-400 italic">No members yet</p>
         ) : (
           members.map(m => (
             <div key={m.id} className="flex items-center gap-2 text-xs">
-              <div className={`w-1.5 h-1.5 rounded-full ${m.socket_id ? 'bg-emerald-500' : 'bg-navy-600'}`} />
-              <span className="text-navy-300">{m.name}</span>
-              <span className="text-navy-500">· {m.role}</span>
+              <div className={`w-1.5 h-1.5 rounded-full ${m.socket_id ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+              <span className="text-gray-700">{m.name}</span>
+              <span className="text-gray-400">· {m.role}</span>
             </div>
           ))
         )}
@@ -496,13 +496,13 @@ function ProjectorCodesView({ session, onClose }) {
   const cols = allTeams.length <= 3 ? allTeams.length : allTeams.length <= 6 ? 3 : 4;
 
   return (
-    <div className="fixed inset-0 bg-navy-950 z-50 flex flex-col items-center justify-center p-8 overflow-auto">
-      <button onClick={onClose} className="absolute top-5 right-6 text-navy-500 hover:text-white text-sm transition-colors">
+    <div className="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center p-8 overflow-auto">
+      <button onClick={onClose} className="absolute top-5 right-6 text-gray-400 hover:text-gray-900 text-sm transition-colors">
         Exit ✕
       </button>
 
-      <div className="font-display text-4xl font-bold text-white mb-1 text-center">CrossWire</div>
-      <div className="text-navy-400 text-base mb-8">Scan or type your team's code to join</div>
+      <div className="font-display text-4xl font-bold text-gray-900 mb-1 text-center">CrossWire</div>
+      <div className="text-gray-500 text-base mb-8">Scan or type your team's code to join</div>
 
       <div
         className="grid gap-5 w-full max-w-5xl"
@@ -511,24 +511,24 @@ function ProjectorCodesView({ session, onClose }) {
         {allTeams.map(team => {
           const joinUrl = `${window.location.origin}/join?code=${team.join_code}`;
           return (
-            <div key={team.id} className="bg-navy-900 border border-navy-700 rounded-2xl p-5 flex flex-col items-center gap-3">
+            <div key={team.id} className="bg-gray-50 border border-gray-200 rounded-2xl p-5 flex flex-col items-center gap-3 shadow-sm">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">{COUNTRY_FLAGS[team.country]}</span>
                 <div className="text-left">
-                  <div className="font-display font-bold text-white text-base">{team.country}</div>
+                  <div className="font-display font-bold text-gray-900 text-base">{team.country}</div>
                   {session.instances?.length > 1 && (
-                    <div className="text-navy-500 text-xs">Instance {team.instanceNum}</div>
+                    <div className="text-gray-400 text-xs">Instance {team.instanceNum}</div>
                   )}
                 </div>
               </div>
 
-              <div className="bg-white p-3 rounded-xl">
+              <div className="bg-white p-3 rounded-xl border border-gray-100">
                 <QRCodeSVG value={joinUrl} size={128} level="M" />
               </div>
 
-              <div className="font-display text-3xl font-bold tracking-widest text-amber-500">{team.join_code}</div>
+              <div className="font-display text-3xl font-bold tracking-widest text-amber-600">{team.join_code}</div>
 
-              <div className="text-xs text-navy-500">
+              <div className="text-xs text-gray-400">
                 {team.memberCount}/6 joined
               </div>
             </div>
@@ -536,7 +536,7 @@ function ProjectorCodesView({ session, onClose }) {
         })}
       </div>
 
-      <div className="mt-8 text-navy-600 text-sm">
+      <div className="mt-8 text-gray-400 text-sm">
         {window.location.origin}/join
       </div>
     </div>
@@ -615,12 +615,12 @@ function FacilitatorGuide({ status, round, onClose }) {
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-navy-900 px-6 py-4 flex items-center justify-between flex-shrink-0">
+        <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 flex items-center justify-between flex-shrink-0">
           <div>
-            <h2 className="font-display text-lg font-bold text-white">Facilitator Guide</h2>
-            <p className="text-gray-400 text-xs mt-0.5">How to run CrossWire end-to-end</p>
+            <h2 className="font-display text-lg font-bold text-gray-900">Facilitator Guide</h2>
+            <p className="text-gray-500 text-xs mt-0.5">How to run CrossWire end-to-end</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors text-lg px-2">✕</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 transition-colors text-lg px-2">✕</button>
         </div>
 
         {/* Phase tabs */}

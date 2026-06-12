@@ -64,7 +64,6 @@ export default function Debrief() {
         .catch(() => {});
     }
 
-    // Participants listen for session close
     if (!isFac) {
       socket.connect();
       socket.on('connect', () => {
@@ -119,8 +118,8 @@ export default function Debrief() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-navy-950 flex items-center justify-center">
-        <div className="text-navy-400">Loading debrief...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-400">Loading debrief...</div>
       </div>
     );
   }
@@ -132,13 +131,13 @@ export default function Debrief() {
   const currentInstData = debriefData?.[activeInstance];
 
   return (
-    <div className="min-h-screen bg-navy-950 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <header className="bg-navy-900 border-b border-navy-700 px-6 py-4 flex items-center justify-between">
+      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm">
         <div>
-          <span className="font-display text-xl font-bold text-white">CrossWire</span>
-          <span className="text-navy-500 mx-2">·</span>
-          <span className="text-navy-400 text-sm">Debrief</span>
+          <span className="font-display text-xl font-bold text-gray-900">CrossWire</span>
+          <span className="text-gray-300 mx-2">·</span>
+          <span className="text-gray-500 text-sm">Debrief</span>
         </div>
         <div className="flex gap-3">
           {isFacilitator && (
@@ -155,7 +154,7 @@ export default function Debrief() {
                     navigate('/end');
                   }
                 }}
-                className="btn-ghost text-sm px-4 py-2 border-red-500/30 text-red-400 hover:bg-red-500/10"
+                className="btn-ghost text-sm px-4 py-2 border-red-200 text-red-600 hover:bg-red-50"
               >
                 ✕ Close Session
               </button>
@@ -168,7 +167,7 @@ export default function Debrief() {
           >
             {exporting ? (
               <>
-                <span className="inline-block w-3.5 h-3.5 border-2 border-navy-950/30 border-t-navy-950 rounded-full animate-spin" />
+                <span className="inline-block w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Generating…
               </>
             ) : (
@@ -180,15 +179,15 @@ export default function Debrief() {
 
       {/* Instance tabs */}
       {debriefData && debriefData.length > 1 && (
-        <div className="bg-navy-900/50 border-b border-navy-700 px-6 flex gap-1">
+        <div className="bg-white border-b border-gray-200 px-6 flex gap-1">
           {debriefData.map((d, i) => (
             <button
               key={i}
               onClick={() => setActiveInstance(i)}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeInstance === i
-                  ? 'border-amber-500 text-amber-500'
-                  : 'border-transparent text-navy-400 hover:text-white'
+                  ? 'border-amber-500 text-amber-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-900'
               }`}
             >
               Instance {d.instance.instance_number}
@@ -205,12 +204,12 @@ export default function Debrief() {
 
         {/* Reflection section (participants only) */}
         {!isFacilitator && !reflectionSaved && (
-          <div className="card border-amber-500/30 animate-fade-in">
-            <h3 className="font-display text-lg font-bold text-white mb-5">Individual Reflection</h3>
+          <div className="card border-amber-200 animate-fade-in">
+            <h3 className="font-display text-lg font-bold text-gray-900 mb-5">Individual Reflection</h3>
             <div className="space-y-5">
               {REFLECTION_QUESTIONS.map((q, i) => (
                 <div key={i}>
-                  <label className="block text-sm font-medium text-navy-300 mb-2">{q}</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{q}</label>
                   <textarea
                     value={reflections[`q${i + 1}`]}
                     onChange={e => handleReflectionChange(`q${i + 1}`, e.target.value)}
@@ -233,9 +232,9 @@ export default function Debrief() {
         )}
 
         {reflectionSaved && (
-          <div className="card border-emerald-500/30 bg-emerald-500/5 text-center animate-fade-in">
+          <div className="card border-emerald-200 bg-emerald-50 text-center animate-fade-in">
             <div className="text-2xl mb-2">✓</div>
-            <p className="font-medium text-emerald-400">Reflections submitted. Thank you!</p>
+            <p className="font-medium text-emerald-700">Reflections submitted. Thank you!</p>
           </div>
         )}
 
@@ -243,8 +242,8 @@ export default function Debrief() {
         {isFacilitator && analytics && (
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <h2 className="font-display text-xl font-bold text-white">Session Analytics</h2>
-              <div className="h-px flex-1 bg-navy-700" />
+              <h2 className="font-display text-xl font-bold text-gray-900">Session Analytics</h2>
+              <div className="h-px flex-1 bg-gray-200" />
             </div>
             <AnalyticsPanel data={analytics} />
           </div>
@@ -253,21 +252,21 @@ export default function Debrief() {
         {/* Facilitator reflections view */}
         {isFacilitator && currentInstData?.reflections?.length > 0 && (
           <div className="card">
-            <h3 className="font-display text-lg font-bold text-white mb-4">Participant Reflections</h3>
+            <h3 className="font-display text-lg font-bold text-gray-900 mb-4">Participant Reflections</h3>
             <div className="space-y-4">
               {currentInstData.reflections.map((r, i) => (
-                <div key={i} className="bg-navy-800 rounded-xl p-4">
+                <div key={i} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                   <div className="flex items-center gap-2 mb-3">
                     <span>{COUNTRY_FLAGS[r.country]}</span>
-                    <span className="font-medium text-white text-sm">{r.name}</span>
-                    <span className="text-navy-500 text-xs">· {r.role}</span>
+                    <span className="font-medium text-gray-900 text-sm">{r.name}</span>
+                    <span className="text-gray-400 text-xs">· {r.role}</span>
                   </div>
-                  {r.q1 && <p className="text-xs text-navy-400 mb-0.5">Change observed</p>}
-                  {r.q1 && <p className="text-sm text-navy-200 mb-2">{r.q1}</p>}
-                  {r.q2 && <p className="text-xs text-navy-400 mb-0.5">Biggest challenge</p>}
-                  {r.q2 && <p className="text-sm text-navy-200 mb-2">{r.q2}</p>}
-                  {r.q3 && <p className="text-xs text-navy-400 mb-0.5">Would do differently</p>}
-                  {r.q3 && <p className="text-sm text-navy-200">{r.q3}</p>}
+                  {r.q1 && <p className="text-xs text-gray-400 mb-0.5">Change observed</p>}
+                  {r.q1 && <p className="text-sm text-gray-700 mb-2">{r.q1}</p>}
+                  {r.q2 && <p className="text-xs text-gray-400 mb-0.5">Biggest challenge</p>}
+                  {r.q2 && <p className="text-sm text-gray-700 mb-2">{r.q2}</p>}
+                  {r.q3 && <p className="text-xs text-gray-400 mb-0.5">Would do differently</p>}
+                  {r.q3 && <p className="text-sm text-gray-700">{r.q3}</p>}
                 </div>
               ))}
             </div>
@@ -281,7 +280,6 @@ export default function Debrief() {
 // ── Diff helpers ─────────────────────────────────────────────────────────────
 
 function diffTableRows(prev, curr) {
-  // Returns curr rows tagged 'same'|'added', plus removed rows from prev
   const prevTexts = prev.map(r => [r.c0, r.c1, r.c2].join('\t'));
   const currTexts = curr.map(r => [r.c0, r.c1, r.c2].join('\t'));
   const prevSet = new Set(prevTexts);
@@ -317,13 +315,13 @@ function EventEvolution({ eventName, rounds }) {
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="font-display text-xl font-bold text-amber-500">{eventName}</h3>
+        <h3 className="font-display text-xl font-bold text-amber-600">{eventName}</h3>
         <button
           onClick={() => setShowDiff(v => !v)}
           className={`text-xs px-3 py-1.5 rounded-lg border font-medium transition-colors ${
             showDiff
-              ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
-              : 'border-navy-600 text-navy-400 hover:text-white hover:border-navy-500'
+              ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+              : 'border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-300'
           }`}
         >
           {showDiff ? '● Show changes ON' : '○ Show changes'}
@@ -339,24 +337,24 @@ function EventEvolution({ eventName, rounds }) {
           return (
             <div key={round} className="relative">
               {round < 3 && (
-                <div className="absolute left-4 top-14 bottom-0 w-px bg-navy-700 z-0" />
+                <div className="absolute left-4 top-14 bottom-0 w-px bg-gray-200 z-0" />
               )}
               <div className="relative z-10 flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-navy-800 border border-navy-600 flex items-center justify-center text-sm font-display font-bold text-navy-300 flex-shrink-0 mt-1">
+                <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center text-sm font-display font-bold text-gray-600 flex-shrink-0 mt-1">
                   {round}
                 </div>
                 <div className="flex-1 pb-4">
                   {team && (
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-lg">{COUNTRY_FLAGS[team.country]}</span>
-                      <span className="font-semibold text-white text-sm">{team.country} Team</span>
-                      <span className="text-navy-500 text-xs">Round {round}</span>
+                      <span className="font-semibold text-gray-900 text-sm">{team.country} Team</span>
+                      <span className="text-gray-400 text-xs">Round {round}</span>
                     </div>
                   )}
 
                   {!hasContent ? (
-                    <div className="bg-navy-800 rounded-xl p-4 border border-navy-700">
-                      <p className="text-sm text-navy-600 italic">No content was written.</p>
+                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                      <p className="text-sm text-gray-400 italic">No content was written.</p>
                     </div>
                   ) : eventDef ? (
                     <div className="space-y-2">
@@ -370,18 +368,18 @@ function EventEvolution({ eventName, rounds }) {
                       ))}
                     </div>
                   ) : (
-                    <div className="bg-navy-800 rounded-xl p-4 border border-navy-700">
-                      <p className="text-sm text-navy-200 whitespace-pre-wrap leading-relaxed">{content}</p>
+                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{content}</p>
                     </div>
                   )}
 
                   {handoffNote && round < 3 && (
-                    <div className="mt-2 ml-4 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
+                    <div className="mt-2 ml-4 bg-amber-50 border border-amber-200 rounded-xl p-3">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs text-amber-400 font-medium uppercase tracking-wider">Handoff Note</span>
-                        {!handoffSubmitted && <span className="text-xs text-red-400">(auto-saved)</span>}
+                        <span className="text-xs text-amber-700 font-semibold uppercase tracking-wider">Handoff Note</span>
+                        {!handoffSubmitted && <span className="text-xs text-red-500">(auto-saved)</span>}
                       </div>
-                      <p className="text-sm text-navy-200 italic">"{handoffNote}"</p>
+                      <p className="text-sm text-amber-900 italic">"{handoffNote}"</p>
                     </div>
                   )}
                 </div>
@@ -403,16 +401,16 @@ function DebriefTaskBlock({ task, content, prevContent }) {
     const diffed = prevRows ? diffTableRows(prevRows, rawRows) : rawRows.map(row => ({ row, status: 'same' }));
 
     return (
-      <div className="bg-navy-800 rounded-xl border border-navy-700 overflow-hidden">
-        <div className="px-3 py-1.5 bg-navy-800 border-b border-navy-700">
-          <span className="text-xs font-bold text-amber-500/80 uppercase tracking-wider">{task.label}</span>
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-200">
+          <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">{task.label}</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-navy-700">
+              <tr className="border-b border-gray-200">
                 {task.columns.map(col => (
-                  <th key={col} className="px-3 py-1.5 text-left text-navy-400 font-medium">{col}</th>
+                  <th key={col} className="px-3 py-1.5 text-left text-gray-500 font-medium">{col}</th>
                 ))}
               </tr>
             </thead>
@@ -420,18 +418,18 @@ function DebriefTaskBlock({ task, content, prevContent }) {
               {diffed.map(({ row, status }, i) => (
                 <tr
                   key={i}
-                  className={`border-b border-navy-700/50 last:border-b-0 ${
-                    status === 'added' ? 'bg-emerald-500/10' :
-                    status === 'removed' ? 'bg-red-500/10' : ''
+                  className={`border-b border-gray-100 last:border-b-0 ${
+                    status === 'added' ? 'bg-emerald-50' :
+                    status === 'removed' ? 'bg-red-50' : ''
                   }`}
                 >
                   {['c0','c1','c2'].map(col => (
                     <td
                       key={col}
                       className={`px-3 py-2 whitespace-pre-wrap ${
-                        status === 'added' ? 'text-emerald-300' :
-                        status === 'removed' ? 'text-red-400 line-through opacity-60' :
-                        'text-navy-200'
+                        status === 'added' ? 'text-emerald-700' :
+                        status === 'removed' ? 'text-red-500 line-through opacity-60' :
+                        'text-gray-700'
                       }`}
                     >
                       {row[col] || '—'}
@@ -451,17 +449,17 @@ function DebriefTaskBlock({ task, content, prevContent }) {
   const tokens = prevContent && prevText !== undefined ? diffText(prevText, content.task3) : null;
 
   return (
-    <div className="bg-navy-800 rounded-xl border border-navy-700 p-3">
-      <p className="text-xs font-bold text-amber-500/80 uppercase tracking-wider mb-1">{task.label}</p>
+    <div className="bg-white rounded-xl border border-gray-200 p-3">
+      <p className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-1">{task.label}</p>
       {tokens ? (
         <p className="text-sm leading-relaxed">
           {tokens.map((t, i) => (
             <span
               key={i}
               className={
-                t.status === 'added' ? 'text-emerald-300' :
-                t.status === 'removed' ? 'text-red-400 line-through opacity-60' :
-                'text-navy-200'
+                t.status === 'added' ? 'text-emerald-700' :
+                t.status === 'removed' ? 'text-red-500 line-through opacity-60' :
+                'text-gray-700'
               }
             >
               {t.word}{' '}
@@ -469,7 +467,7 @@ function DebriefTaskBlock({ task, content, prevContent }) {
           ))}
         </p>
       ) : (
-        <p className="text-sm text-navy-200 whitespace-pre-wrap leading-relaxed">{content.task3}</p>
+        <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{content.task3}</p>
       )}
     </div>
   );
@@ -477,34 +475,34 @@ function DebriefTaskBlock({ task, content, prevContent }) {
 
 function MasterDebriefView({ data, onClose, onExport, exporting }) {
   return (
-    <div className="fixed inset-0 bg-navy-950 z-50 overflow-auto">
-      <div className="sticky top-0 bg-navy-900 border-b border-navy-700 px-6 py-3 flex items-center justify-between z-10">
-        <span className="font-display text-lg font-bold text-white">Master Debrief — All Instances</span>
+    <div className="fixed inset-0 bg-white z-50 overflow-auto">
+      <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between z-10 shadow-sm">
+        <span className="font-display text-lg font-bold text-gray-900">Master Debrief — All Instances</span>
         <div className="flex gap-3">
           <button onClick={onExport} disabled={exporting} className="btn-primary text-sm px-4 py-2 flex items-center gap-2">
-            {exporting ? <><span className="inline-block w-3 h-3 border-2 border-navy-950/30 border-t-navy-950 rounded-full animate-spin" />Generating…</> : '↓ Export PDF'}
+            {exporting ? <><span className="inline-block w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />Generating…</> : '↓ Export PDF'}
           </button>
-          <button onClick={onClose} className="text-navy-400 hover:text-white px-2">✕ Close</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 px-2">✕ Close</button>
         </div>
       </div>
       <div className="p-6">
         <div className="grid gap-6" style={{ gridTemplateColumns: `repeat(${data.length}, minmax(0, 1fr))` }}>
           {data.map((instData, i) => (
             <div key={i}>
-              <h2 className="font-display text-lg font-bold text-amber-500 mb-4">
+              <h2 className="font-display text-lg font-bold text-amber-600 mb-4">
                 Instance {instData.instance.instance_number}
               </h2>
               {instData.eventData.map(({ eventName, rounds }) => (
                 <div key={eventName} className="mb-6">
-                  <h3 className="font-semibold text-white text-sm mb-2">{eventName}</h3>
+                  <h3 className="font-semibold text-gray-900 text-sm mb-2">{eventName}</h3>
                   {rounds.map(({ round, team, content }) => (
-                    <div key={round} className="mb-2 bg-navy-800 rounded-lg p-3 text-xs">
+                    <div key={round} className="mb-2 bg-gray-50 rounded-lg p-3 text-xs border border-gray-200">
                       {team && (
-                        <div className="text-navy-400 mb-1">
+                        <div className="text-gray-400 mb-1">
                           R{round} · {COUNTRY_FLAGS[team.country]} {team.country}
                         </div>
                       )}
-                      <p className="text-navy-200 line-clamp-3">{content || <span className="text-navy-600 italic">Empty</span>}</p>
+                      <p className="text-gray-700 line-clamp-3">{content || <span className="text-gray-400 italic">Empty</span>}</p>
                     </div>
                   ))}
                 </div>
