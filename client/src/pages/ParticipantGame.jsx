@@ -342,9 +342,9 @@ export default function ParticipantGame() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-navy-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="card text-center max-w-sm">
-          <p className="text-red-400 font-medium mb-4">{error}</p>
+          <p className="text-red-500 font-medium mb-4">{error}</p>
           <button onClick={() => navigate('/join')} className="btn-primary">Back to Join</button>
         </div>
       </div>
@@ -353,8 +353,8 @@ export default function ParticipantGame() {
 
   if (!participant || !session) {
     return (
-      <div className="min-h-screen bg-navy-950 flex items-center justify-center">
-        <div className="text-navy-400 text-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-400 text-center">
           <div className="text-2xl mb-3 animate-pulse">⟳</div>
           <p>Connecting to session...</p>
         </div>
@@ -369,7 +369,7 @@ export default function ParticipantGame() {
   }
 
   return (
-    <div className="min-h-screen bg-navy-950 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Transition overlay */}
       {transition && sessionStatus === 'handoff' && (
         <TransitionScreen
@@ -390,7 +390,7 @@ export default function ParticipantGame() {
 
       {/* Broadcast banner */}
       {broadcast && (
-        <div className="bg-amber-500 text-navy-950 text-center py-2.5 px-4 text-sm font-medium animate-fade-in">
+        <div className="bg-amber-500 text-white text-center py-2.5 px-4 text-sm font-medium animate-fade-in">
           📢 {broadcast}
           <button onClick={() => setBroadcast(null)} className="ml-3 opacity-60 hover:opacity-100">✕</button>
         </div>
@@ -398,33 +398,33 @@ export default function ParticipantGame() {
 
       {/* Prompt banner */}
       {prompt && (
-        <div className="bg-navy-700 border-b border-navy-600 text-center py-2.5 px-4 text-sm text-navy-200 animate-fade-in">
+        <div className="bg-blue-50 border-b border-blue-200 text-center py-2.5 px-4 text-sm text-blue-700 animate-fade-in">
           {prompt}
         </div>
       )}
 
-      {/* Top bar */}
-      <header className="bg-navy-900 border-b border-navy-700 px-4 py-3 flex items-center justify-between flex-shrink-0">
+      {/* Top bar — stays dark for contrast */}
+      <header className="bg-navy-900 border-b border-navy-800 px-4 py-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
           <span className="text-xl">{COUNTRY_FLAGS[team?.country]}</span>
           <div>
             <div className="font-display font-bold text-white text-sm">{team?.country} Team</div>
-            <div className="text-navy-400 text-xs">{participant?.name} · {participant?.role}</div>
+            <div className="text-gray-400 text-xs">{participant?.name} · <span className="text-amber-400">{participant?.role}</span></div>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           {assignment && (
             <div className="text-right hidden sm:block">
-              <div className="text-xs text-navy-400">Round {session.current_round}/3</div>
-              <div className="text-xs text-navy-500">{assignment.event}</div>
+              <div className="text-xs text-gray-400">Round {session.current_round} of 3</div>
+              <div className="text-xs text-amber-400 font-medium">{assignment.event}</div>
             </div>
           )}
           <div className="text-right">
             {session.current_round > 0 ? (
               <Timer remaining={remaining} total={session.round_duration} compact />
             ) : (
-              <span className="text-navy-400 text-sm">Waiting...</span>
+              <span className="text-gray-400 text-sm">Waiting...</span>
             )}
           </div>
         </div>
@@ -435,47 +435,62 @@ export default function ParticipantGame() {
         <DebriefRedirect navigate={navigate} sessionId={session.id} participant={participant} assignment={assignment} socket={socket} />
       ) : assignment ? (
         <main className="flex-1 grid grid-cols-1 lg:grid-cols-[280px_1fr_300px] gap-0 min-h-0 overflow-hidden">
-          {/* Role card */}
-          <aside className="border-b lg:border-b-0 lg:border-r border-navy-700 p-4 overflow-y-auto scrollbar-thin bg-navy-900/30">
-            <RoleCard
-              participant={participant}
-              team={team}
-              round={session.current_round}
-              showReflection={showReflection && sessionStatus === 'handoff'}
-              onReflectionSubmit={handleReflection}
-            />
+          {/* Left: Role card */}
+          <aside className="border-b lg:border-b-0 lg:border-r border-gray-200 overflow-y-auto scrollbar-thin bg-gray-50">
+            <div className="px-3 py-2 border-b border-gray-200 bg-white">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Your Role</p>
+            </div>
+            <div className="p-4">
+              <RoleCard
+                participant={participant}
+                team={team}
+                round={session.current_round}
+                showReflection={showReflection && sessionStatus === 'handoff'}
+                onReflectionSubmit={handleReflection}
+              />
+            </div>
           </aside>
 
-          {/* Workspace */}
-          <div className="p-4 overflow-y-auto scrollbar-thin">
-            <StructuredWorkspace
-              eventName={assignment.event}
-              round={session.current_round}
-              content={workspaceContent}
-              prevContent={prevContent}
-              prevHandoff={prevHandoff}
-              prevTeam={prevTeam}
-              onChange={handleWorkspaceChange}
-              readOnly={isReadOnly}
-            />
+          {/* Centre: Workspace */}
+          <div className="overflow-y-auto scrollbar-thin bg-white">
+            <div className="px-4 py-2 border-b border-gray-200 bg-white sticky top-0 z-10">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Event Workspace</p>
+            </div>
+            <div className="p-4">
+              <StructuredWorkspace
+                eventName={assignment.event}
+                round={session.current_round}
+                content={workspaceContent}
+                prevContent={prevContent}
+                prevHandoff={prevHandoff}
+                prevTeam={prevTeam}
+                onChange={handleWorkspaceChange}
+                readOnly={isReadOnly}
+              />
+            </div>
           </div>
 
-          {/* Handoff note */}
-          <aside className="border-t lg:border-t-0 lg:border-l border-navy-700 p-4 bg-navy-900/30">
-            <HandoffNote
-              visible={handoffVisible}
-              content={handoffContent}
-              onChange={handleHandoffChange}
-              onSubmit={handleHandoffSubmit}
-              submitted={handoffSubmitted}
-              isLastRound={session.current_round === 3}
-              unlockSeconds={handoffSecs}
-            />
+          {/* Right: Handoff note */}
+          <aside className="border-t lg:border-t-0 lg:border-l border-gray-200 overflow-y-auto scrollbar-thin bg-gray-50">
+            <div className="px-3 py-2 border-b border-gray-200 bg-white">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Handoff Note</p>
+            </div>
+            <div className="p-4">
+              <HandoffNote
+                visible={handoffVisible}
+                content={handoffContent}
+                onChange={handleHandoffChange}
+                onSubmit={handleHandoffSubmit}
+                submitted={handoffSubmitted}
+                isLastRound={session.current_round === 3}
+                unlockSeconds={handoffSecs}
+              />
+            </div>
           </aside>
         </main>
       ) : (
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-navy-400">Waiting for round to begin...</p>
+          <p className="text-gray-400">Waiting for round to begin...</p>
         </div>
       )}
 
@@ -492,25 +507,108 @@ function WaitingRoom({ participant, team, session, connected }) {
     ?.members?.length || 1;
 
   return (
-    <div className="min-h-screen bg-navy-950 flex flex-col items-center justify-center px-6 text-center">
-      <div className="animate-fade-in max-w-md">
-        <div className="text-5xl mb-6">{team?.countryData?.flag || '🏳'}</div>
-        <h1 className="font-display text-3xl font-bold text-white mb-2">You're in!</h1>
-        <p className="text-navy-300 text-lg mb-1">
-          {team?.country} Team · <span className="text-amber-500">{participant?.role}</span>
-        </p>
-        <p className="text-navy-400 text-sm mb-8">Waiting for the facilitator to start the session...</p>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Dark header for branding */}
+      <header className="bg-navy-900 border-b border-navy-800 px-6 py-4 flex items-center justify-between">
+        <span className="font-display text-xl font-bold text-white">CrossWire</span>
+        <div className="flex items-center gap-2 text-gray-400 text-sm">
+          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-400' : 'bg-red-400'}`} />
+          <span>{connected ? 'Connected' : 'Disconnected'}</span>
+        </div>
+      </header>
 
-        <div className="card mb-6">
-          <p className="text-xs text-navy-400 uppercase tracking-wider font-medium mb-3">Your Role</p>
-          <p className="text-sm text-navy-200 leading-relaxed italic">
-            "{team?.countryData?.roles?.[participant?.role]}"
-          </p>
+      <div className="flex-1 flex flex-col lg:flex-row items-start justify-center gap-6 px-6 py-10 max-w-5xl mx-auto w-full">
+        {/* Left: Identity card */}
+        <div className="w-full lg:w-80 flex-shrink-0 animate-fade-in">
+          <div className="card text-center mb-4">
+            <div className="text-5xl mb-4">{team?.countryData?.flag || '🏳'}</div>
+            <h1 className="font-display text-2xl font-bold text-gray-900 mb-1">You're in!</h1>
+            <p className="text-lg text-gray-700 mb-0.5">
+              {team?.country} Team
+            </p>
+            <p className="text-amber-600 font-semibold mb-4">{participant?.role}</p>
+
+            <div className="bg-gray-50 rounded-lg p-4 text-left mb-4">
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-2">Your Character</p>
+              <p className="text-sm text-gray-700 leading-relaxed italic">
+                "{team?.countryData?.roles?.[participant?.role]}"
+              </p>
+            </div>
+
+            {team?.countryData?.style && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-left">
+                <p className="text-xs text-amber-700 uppercase tracking-wider font-semibold mb-1">Team Style</p>
+                <p className="text-xs text-amber-900 leading-relaxed">{team.countryData.style}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="text-center text-sm text-gray-400">
+            <span>{memberCount} member{memberCount !== 1 ? 's' : ''} in this team</span>
+            <span className="mx-2">·</span>
+            <span className="text-amber-600 font-medium">Waiting for facilitator to start…</span>
+          </div>
         </div>
 
-        <div className="flex items-center justify-center gap-2 text-navy-500 text-sm">
-          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-500' : 'bg-red-400'}`} />
-          <span>{memberCount} member{memberCount !== 1 ? 's' : ''} in this team</span>
+        {/* Right: How it works */}
+        <div className="w-full animate-fade-in">
+          <div className="card">
+            <h2 className="font-display text-lg font-bold text-gray-900 mb-1">How CrossWire Works</h2>
+            <p className="text-sm text-gray-500 mb-5">Read this before the session starts — you won't get instructions during the game.</p>
+
+            <div className="space-y-4 mb-6">
+              {[
+                {
+                  step: '1',
+                  color: 'bg-blue-100 text-blue-700',
+                  title: 'You have a country persona',
+                  desc: 'Your team represents a country with its own communication style. Stay in character — HOW you communicate is part of the challenge.'
+                },
+                {
+                  step: '2',
+                  color: 'bg-amber-100 text-amber-700',
+                  title: '3 rounds, 3 event types',
+                  desc: 'Each round, your team works on an event: a Press Conference, Product Launch, or Internal Conference. You plan the agenda, materials, and rules.'
+                },
+                {
+                  step: '3',
+                  color: 'bg-purple-100 text-purple-700',
+                  title: 'Teams hand off between rounds',
+                  desc: 'After each round, a different team continues YOUR event. You\'ll also inherit another team\'s work. What you leave behind matters.'
+                },
+                {
+                  step: '4',
+                  color: 'bg-emerald-100 text-emerald-700',
+                  title: 'Write a handoff note before time runs out',
+                  desc: 'Near the end of each round, a handoff note box will appear. Tell the next team what you decided, what\'s unfinished, and what they should watch out for.'
+                },
+              ].map(({ step, color, title, desc }) => (
+                <div key={step} className="flex gap-3">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 ${color}`}>
+                    {step}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">{title}</p>
+                    <p className="text-sm text-gray-600 leading-relaxed">{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-gray-900 rounded-xl p-4 text-white">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">The Goal</p>
+              <p className="text-sm leading-relaxed">
+                By the end, you'll see what got lost or distorted as work passed between teams — and why. The debrief will reveal how different communication styles shaped every decision.
+              </p>
+            </div>
+          </div>
+
+          {team?.countryData?.norms && (
+            <div className="mt-4 card border-purple-200 bg-purple-50">
+              <p className="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-2">Secret Protocol — only your team sees this</p>
+              <p className="text-sm text-purple-900 leading-relaxed">{team.countryData.norms}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -529,8 +627,8 @@ function DebriefRedirect({ navigate, sessionId, participant, assignment, socket 
     <div className="flex-1 flex items-center justify-center">
       <div className="text-center animate-fade-in">
         <div className="text-4xl mb-4">🎉</div>
-        <h2 className="font-display text-2xl font-bold text-white mb-2">All rounds complete!</h2>
-        <p className="text-navy-400">Taking you to the debrief...</p>
+        <h2 className="font-display text-2xl font-bold text-gray-900 mb-2">All rounds complete!</h2>
+        <p className="text-gray-500">Taking you to the debrief...</p>
       </div>
     </div>
   );

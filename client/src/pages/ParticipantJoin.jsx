@@ -56,17 +56,20 @@ export default function ParticipantJoin() {
   };
 
   return (
-    <div className="min-h-screen bg-navy-950 flex flex-col items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-md animate-fade-in">
-        <div className="text-center mb-10">
-          <div className="font-display text-3xl font-bold text-white mb-2">CrossWire</div>
-          <p className="text-navy-400">Enter your team join code to get started.</p>
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-amber-500 mb-4">
+            <span className="text-white font-bold text-xl">✕</span>
+          </div>
+          <div className="font-display text-3xl font-bold text-gray-900 mb-2">CrossWire</div>
+          <p className="text-gray-500">Enter your team join code to get started.</p>
         </div>
 
         <div className="card">
           <form onSubmit={handleJoin} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-navy-300 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Team Join Code
               </label>
               <input
@@ -79,23 +82,23 @@ export default function ParticipantJoin() {
                 autoFocus
               />
               {checking && (
-                <p className="text-xs text-navy-400 mt-1.5 text-center">Checking code...</p>
+                <p className="text-xs text-gray-400 mt-1.5 text-center">Checking code...</p>
               )}
               {error && (
-                <p className="text-sm text-red-400 mt-1.5 text-center">{error}</p>
+                <p className="text-sm text-red-500 mt-1.5 text-center">{error}</p>
               )}
             </div>
 
             {teamInfo && (
-              <div className="bg-navy-800 rounded-xl p-4 border border-navy-600 animate-fade-in">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 animate-fade-in">
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">{teamInfo.countryData?.flag || '🏳'}</span>
                   <div>
-                    <div className="font-semibold text-white">{teamInfo.team.country} Team</div>
-                    <div className="text-xs text-navy-400">
+                    <div className="font-semibold text-gray-900">{teamInfo.team.country} Team</div>
+                    <div className="text-xs text-gray-500">
                       {teamInfo.members.length}/6 members joined
                       {teamInfo.spotsLeft > 0 && (
-                        <span className="ml-1 text-emerald-500">· {teamInfo.spotsLeft} spot{teamInfo.spotsLeft !== 1 ? 's' : ''} left</span>
+                        <span className="ml-1 text-emerald-600 font-medium">· {teamInfo.spotsLeft} spot{teamInfo.spotsLeft !== 1 ? 's' : ''} left</span>
                       )}
                       {teamInfo.members.length > 0 && (
                         <span className="ml-2">· {teamInfo.members.map(m => m.name).join(', ')}</span>
@@ -103,12 +106,12 @@ export default function ParticipantJoin() {
                     </div>
                   </div>
                 </div>
-                <p className="text-xs text-navy-400 mt-2 italic">{teamInfo.countryData?.style}</p>
+                <p className="text-xs text-gray-600 mt-2 italic">{teamInfo.countryData?.style}</p>
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-navy-300 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Your First Name
               </label>
               <input
@@ -131,8 +134,8 @@ export default function ParticipantJoin() {
           </form>
         </div>
 
-        <p className="text-center text-navy-500 text-sm mt-6">
-          <button onClick={() => navigate('/')} className="hover:text-navy-300 transition-colors">
+        <p className="text-center text-gray-400 text-sm mt-6">
+          <button onClick={() => navigate('/')} className="hover:text-gray-600 transition-colors">
             ← Back to home
           </button>
         </p>

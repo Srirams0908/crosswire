@@ -25,6 +25,7 @@ export default function FacilitatorDashboard() {
   const [handoffStatuses, setHandoffStatuses] = useState({});
   const [notes, setNotes] = useState('');
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved'
+  const [showGuide, setShowGuide] = useState(false);
   const saveTimer = useRef(null);
 
   const facilitatorCode = localStorage.getItem('facilitatorCode');
@@ -209,6 +210,9 @@ export default function FacilitatorDashboard() {
           {status === 'active' && (
             <Timer remaining={remaining} total={session.round_duration} compact />
           )}
+          <button onClick={() => setShowGuide(!showGuide)} className="btn-ghost text-sm px-3 py-2">
+            📖 Guide
+          </button>
           <button onClick={() => setFullscreen(true)} className="btn-ghost text-sm px-3 py-2">
             📽 Codes
           </button>
@@ -222,6 +226,9 @@ export default function FacilitatorDashboard() {
           )}
         </div>
       </header>
+
+      {/* Facilitator Guide panel */}
+      {showGuide && <FacilitatorGuide status={status} round={round} onClose={() => setShowGuide(false)} />}
 
       {/* Broadcast panel */}
       {showBroadcast && (
@@ -531,6 +538,130 @@ function ProjectorCodesView({ session, onClose }) {
 
       <div className="mt-8 text-navy-600 text-sm">
         {window.location.origin}/join
+      </div>
+    </div>
+  );
+}
+
+// ── Facilitator Guide ─────────────────────────────────────────────────────────
+
+const GUIDE_SECTIONS = [
+  {
+    id: 'brief',
+    phase: 'Before you start',
+    color: 'border-blue-500 bg-blue-50',
+    headerColor: 'bg-blue-500 text-white',
+    items: [
+      { title: 'Welcome & framing', body: 'Tell participants: "You\'re about to experience what happens when global teams hand off work. Each team has a country persona with a distinct communication style. Your job is to stay in character."' },
+      { title: 'Don\'t over-explain', body: 'Resist explaining the twist upfront. Let some confusion happen naturally — the communication breakdowns are the learning.' },
+      { title: 'Team setup', body: 'Show the QR codes (📽 Codes). Have each team scan and join before starting Round 1. Wait until all teams show members in the dashboard.' },
+      { title: 'Remind them', body: '"You\'ll have 3 rounds. After each round you write a handoff note for the next team. The handoff note box appears automatically near the end."' },
+    ]
+  },
+  {
+    id: 'round',
+    phase: 'During each round',
+    color: 'border-amber-500 bg-amber-50',
+    headerColor: 'bg-amber-500 text-white',
+    items: [
+      { title: 'Start the round', body: 'Click "Start Round" when everyone is ready and in the app. The timer starts immediately.' },
+      { title: 'Let them struggle', body: 'Don\'t help teams figure out what to write — ambiguity is the point. Watch for teams that are confused about their role or event.' },
+      { title: 'Watch the dashboard', body: 'Green dots = online. Red dot next to a team = handoff note not submitted. Handoff notes unlock automatically in the final 90 seconds.' },
+      { title: 'Curveballl (optional)', body: 'Use ⚡ Curveball sparingly — max 1 per round. Best mid-round when teams are in flow. Choose one that creates coordination tension (budget cut, venue change).' },
+      { title: 'Trigger handoff', body: 'Once all teams\' handoff notes are submitted (or time runs out), click "Trigger Handoff". Teams see a 10-second transition screen before the next round.' },
+    ]
+  },
+  {
+    id: 'debrief',
+    phase: 'Debrief (after Round 3)',
+    color: 'border-purple-500 bg-purple-50',
+    headerColor: 'bg-purple-500 text-white',
+    items: [
+      { title: 'Opening question', body: '"Look at your event from Round 1 to Round 3 — what changed? What got dropped or distorted?"' },
+      { title: 'Communication question', body: '"When did you feel frustrated with the previous team\'s handoff? What were you expecting that wasn\'t there?"' },
+      { title: 'Cultural angle', body: '"How did your country\'s communication style show up in what you wrote? Did any team\'s style make collaboration harder?"' },
+      { title: 'Transfer question', body: '"What would you do differently in a real international project? What structures or norms would help?"' },
+      { title: 'Key insight to draw out', body: 'The most common failure: teams assume the next team will understand what they left implicit. The handoff note is where assumptions live — and break.' },
+    ]
+  },
+  {
+    id: 'tips',
+    phase: 'Tips & common issues',
+    color: 'border-gray-400 bg-gray-50',
+    headerColor: 'bg-gray-600 text-white',
+    items: [
+      { title: 'Teams not filling in the workspace', body: 'Remind them the workspace is collaborative — all team members can type at once. If one person is doing everything, call it out.' },
+      { title: 'Participants confused about their role', body: 'Direct them to the Role Card on the left side. The character description tells them HOW to behave, not just what to do.' },
+      { title: 'Handoff note too short', body: 'The app requires at least 20 words. If teams submit short notes, call it out in the debrief — "What did you leave out, and why?"' },
+      { title: 'Timer management', body: 'You can pause mid-round with ⏸ Pause if you need to address the group. Use Trigger Handoff if a round is running long and teams are done.' },
+    ]
+  }
+];
+
+function FacilitatorGuide({ status, round, onClose }) {
+  const [activeSection, setActiveSection] = useState('brief');
+
+  const suggestedSection =
+    status === 'waiting' ? 'brief' :
+    status === 'active' || status === 'paused' ? 'round' :
+    status === 'debrief' ? 'debrief' : 'brief';
+
+  const section = GUIDE_SECTIONS.find(s => s.id === activeSection) || GUIDE_SECTIONS[0];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-fade-in" onClick={onClose}>
+      <div
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="bg-navy-900 px-6 py-4 flex items-center justify-between flex-shrink-0">
+          <div>
+            <h2 className="font-display text-lg font-bold text-white">Facilitator Guide</h2>
+            <p className="text-gray-400 text-xs mt-0.5">How to run CrossWire end-to-end</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors text-lg px-2">✕</button>
+        </div>
+
+        {/* Phase tabs */}
+        <div className="flex border-b border-gray-200 bg-gray-50 flex-shrink-0 overflow-x-auto">
+          {GUIDE_SECTIONS.map(s => (
+            <button
+              key={s.id}
+              onClick={() => setActiveSection(s.id)}
+              className={`px-4 py-3 text-xs font-semibold whitespace-nowrap transition-colors border-b-2 ${
+                activeSection === s.id
+                  ? 'border-amber-500 text-amber-700 bg-white'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {s.phase}
+              {s.id === suggestedSection && activeSection !== s.id && (
+                <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-amber-500 inline-block align-middle" />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className={`rounded-xl border-l-4 px-4 py-3 mb-5 ${section.color}`}>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{section.phase}</p>
+          </div>
+          <div className="space-y-4">
+            {section.items.map((item, i) => (
+              <div key={i} className="flex gap-3">
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 ${section.headerColor}`}>
+                  {i + 1}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 mb-0.5">{item.title}</p>
+                  <p className="text-sm text-gray-600 leading-relaxed">{item.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

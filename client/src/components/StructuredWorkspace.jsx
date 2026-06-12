@@ -13,7 +13,6 @@ export default function StructuredWorkspace({
   const [local, setLocal] = useState(() => parseContent(content));
   const lastSent = useRef(content);
 
-  // Sync in remote updates (other team members typing) without stomping local edits
   useEffect(() => {
     if (content !== lastSent.current) {
       setLocal(parseContent(content));
@@ -56,33 +55,33 @@ export default function StructuredWorkspace({
   return (
     <div className="flex flex-col gap-0 min-h-0">
       {/* Event label + framing */}
-      <div className="flex-shrink-0 mb-4">
-        <span className="text-xs text-navy-400 uppercase tracking-wider font-medium">
+      <div className="flex-shrink-0 mb-5">
+        <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">
           Round {round} · Event
         </span>
-        <h2 className="font-display text-xl font-bold text-white mt-0.5">{eventName}</h2>
-        <p className="text-navy-300 text-sm leading-relaxed mt-2 bg-navy-800/50 rounded-xl px-4 py-3 border border-navy-700/50">
+        <h2 className="font-display text-xl font-bold text-gray-900 mt-0.5">{eventName}</h2>
+        <p className="text-gray-600 text-sm leading-relaxed mt-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
           {eventDef.framing}
         </p>
       </div>
 
-      {/* Previous team's work */}
+      {/* Previous team's work — visually distinct blue section */}
       {round > 1 && parsedPrev && (
-        <div className="flex-shrink-0 mb-5 rounded-xl border border-navy-700 overflow-hidden">
-          <div className="bg-navy-800/80 px-4 py-2.5 flex items-center gap-2">
+        <div className="flex-shrink-0 mb-6 rounded-xl border border-blue-200 overflow-hidden">
+          <div className="bg-blue-600 px-4 py-2.5 flex items-center gap-2">
             <span className="text-base">{COUNTRY_FLAGS[prevTeam] ?? '🏳'}</span>
-            <span className="text-sm font-semibold text-navy-200">
-              {prevTeam} Team — Round {round - 1}
+            <span className="text-sm font-semibold text-white">
+              {prevTeam} Team — Round {round - 1} (what they left you)
             </span>
-            <span className="ml-auto text-xs text-navy-500 italic">read-only</span>
+            <span className="ml-auto text-xs text-blue-200 italic">read-only</span>
           </div>
           {prevHandoff && (
-            <div className="px-4 py-3 bg-amber-500/5 border-b border-amber-500/20">
-              <p className="text-xs text-amber-400 font-medium uppercase tracking-wider mb-1">Handoff Note</p>
-              <p className="text-sm text-navy-200 italic">"{prevHandoff}"</p>
+            <div className="px-4 py-3 bg-amber-50 border-b border-amber-200">
+              <p className="text-xs text-amber-700 font-semibold uppercase tracking-wider mb-1">Their Handoff Note to You</p>
+              <p className="text-sm text-amber-900 italic">"{prevHandoff}"</p>
             </div>
           )}
-          <div className="px-4 py-3 space-y-4 bg-navy-900/30">
+          <div className="px-4 py-3 space-y-4 bg-blue-50">
             {eventDef.tasks.map(task => (
               <TaskBlock
                 key={task.id}
@@ -97,6 +96,13 @@ export default function StructuredWorkspace({
 
       {/* Current team's editable work */}
       <div className="flex-1 flex flex-col gap-4 min-h-0">
+        {round > 1 && (
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-px flex-1 bg-gray-200" />
+            <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider px-2">Your work — continue below</span>
+            <div className="h-px flex-1 bg-gray-200" />
+          </div>
+        )}
         {eventDef.tasks.map(task => (
           <TaskBlock
             key={task.id}
@@ -117,29 +123,29 @@ export default function StructuredWorkspace({
 
 function TaskBlock({ task, content, readOnly, onCellChange, onAddRow, onTextChange }) {
   return (
-    <div className={`rounded-xl border overflow-hidden flex-shrink-0 ${
-      readOnly ? 'border-navy-700/60' : 'border-navy-600'
+    <div className={`rounded-xl border overflow-hidden flex-shrink-0 shadow-sm ${
+      readOnly ? 'border-blue-200' : 'border-gray-200'
     }`}>
       {/* Task header */}
-      <div className={`px-4 py-2 border-b ${
+      <div className={`px-4 py-2.5 border-b ${
         readOnly
-          ? 'bg-navy-800/40 border-navy-700/60'
-          : 'bg-navy-800 border-navy-600'
+          ? 'bg-blue-100 border-blue-200'
+          : 'bg-amber-50 border-amber-200'
       }`}>
         <p className={`text-xs font-bold uppercase tracking-wider ${
-          readOnly ? 'text-navy-500' : 'text-amber-500'
+          readOnly ? 'text-blue-600' : 'text-amber-700'
         }`}>
           {task.label}
         </p>
         <p className={`text-xs mt-0.5 leading-relaxed ${
-          readOnly ? 'text-navy-600' : 'text-navy-400'
+          readOnly ? 'text-blue-500' : 'text-gray-600'
         }`}>
           {task.description}
         </p>
       </div>
 
       {/* Task content */}
-      <div className={readOnly ? 'bg-navy-900/20' : 'bg-navy-900/40'}>
+      <div className={readOnly ? 'bg-blue-50/50' : 'bg-white'}>
         {task.type === 'table' ? (
           <TableInput
             task={task}
@@ -169,12 +175,12 @@ function TableInput({ task, rows, readOnly, onCellChange, onAddRow }) {
   return (
     <div>
       {/* Column headers */}
-      <div className="flex border-b border-navy-700/60 bg-navy-800/30">
+      <div className="flex border-b border-gray-200 bg-gray-50">
         {task.columns.map((col, ci) => (
           <div
             key={ci}
-            className={`${task.colWidths[ci]} px-3 py-1.5 text-xs font-medium text-navy-400 uppercase tracking-wide ${
-              ci < task.columns.length - 1 ? 'border-r border-navy-700/60' : ''
+            className={`${task.colWidths[ci]} px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide ${
+              ci < task.columns.length - 1 ? 'border-r border-gray-200' : ''
             }`}
           >
             {col}
@@ -184,26 +190,26 @@ function TableInput({ task, rows, readOnly, onCellChange, onAddRow }) {
 
       {/* Data rows */}
       {rows.map((row, ri) => (
-        <div key={ri} className={`flex border-b border-navy-700/40 last:border-b-0 ${
-          readOnly ? '' : 'hover:bg-navy-800/20 transition-colors'
+        <div key={ri} className={`flex border-b border-gray-100 last:border-b-0 ${
+          readOnly ? '' : 'hover:bg-amber-50/30 transition-colors'
         }`}>
           {cols.map((col, ci) => (
             <div
               key={ci}
               className={`${task.colWidths[ci]} ${
-                ci < cols.length - 1 ? 'border-r border-navy-700/40' : ''
+                ci < cols.length - 1 ? 'border-r border-gray-100' : ''
               }`}
             >
               {readOnly ? (
-                <div className="px-3 py-2 text-sm text-navy-300 min-h-[2.25rem] whitespace-pre-wrap">
-                  {row[col] || <span className="text-navy-700">—</span>}
+                <div className="px-3 py-2 text-sm text-gray-700 min-h-[2.25rem] whitespace-pre-wrap">
+                  {row[col] || <span className="text-gray-300">—</span>}
                 </div>
               ) : (
                 <textarea
                   value={row[col]}
                   onChange={e => onCellChange(ri, col, e.target.value)}
                   rows={1}
-                  className="w-full px-3 py-2 bg-transparent text-sm text-white placeholder-navy-600 focus:outline-none focus:bg-navy-800/40 resize-none leading-snug min-h-[2.25rem] transition-colors"
+                  className="w-full px-3 py-2 bg-transparent text-sm text-gray-900 placeholder-gray-300 focus:outline-none focus:bg-amber-50/50 resize-none leading-snug min-h-[2.25rem] transition-colors"
                   placeholder=""
                   style={{ height: 'auto', overflow: 'hidden' }}
                   onInput={e => {
@@ -222,7 +228,7 @@ function TableInput({ task, rows, readOnly, onCellChange, onAddRow }) {
         <div className="px-3 py-1.5">
           <button
             onClick={onAddRow}
-            className="text-xs text-navy-500 hover:text-navy-300 transition-colors flex items-center gap-1"
+            className="text-xs text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1"
           >
             <span className="text-base leading-none">+</span> Add row
           </button>
@@ -237,8 +243,8 @@ function TableInput({ task, rows, readOnly, onCellChange, onAddRow }) {
 function TextInput({ value, readOnly, placeholder, onChange }) {
   if (readOnly) {
     return (
-      <div className="px-4 py-3 text-sm text-navy-300 whitespace-pre-wrap leading-relaxed min-h-16">
-        {value || <span className="text-navy-700 italic">Nothing written.</span>}
+      <div className="px-4 py-3 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed min-h-16">
+        {value || <span className="text-gray-300 italic">Nothing written.</span>}
       </div>
     );
   }
@@ -248,7 +254,7 @@ function TextInput({ value, readOnly, placeholder, onChange }) {
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       rows={4}
-      className="w-full px-4 py-3 bg-transparent text-sm text-white placeholder-navy-600 focus:outline-none resize-none leading-relaxed"
+      className="w-full px-4 py-3 bg-transparent text-sm text-gray-900 placeholder-gray-400 focus:outline-none resize-none leading-relaxed"
     />
   );
 }
